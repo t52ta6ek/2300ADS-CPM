@@ -9,8 +9,10 @@ under ADS CP/M itself.
 Instructions:
 
 1. Extract the contents of the DSDD_WORK.zip file into a folder in Windows called DSDD_WORK.
+Right-click DSDD_WORK.zip and "Extract All..." and a new folder DSDD_WORK will be created.<br>
+(SHA-1 of DSDD_WORK.zip is 36183d244df1d3cca08a4cafd9e93b9043dbd5f2)
 
-2. Run the "run.bat" file, you will see Z80-SIM boot up.<br>
+2. In the DSDD_WORK folder, run the "run.bat" file, you will see Z80-SIM boot up.<br>
 Drive A: contains the Z80-SIM CP/M system.<br>
 Drive B: contains a copy of my working directory for building the sources.<br>
 Drive C: contains WordStar that will run on Z80-SIM<br>
