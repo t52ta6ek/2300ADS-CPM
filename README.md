@@ -1,7 +1,7 @@
 # 2300ADS-CPM
 CP/M 2.2 for the GenRad 2300 Advanced Development System (aka MicroKit, FutureData, GenRad and Kontron 2300 ADS)
 
-These are the sources to the latest/last version of CP/M 2.2 I developed for this machine back in the day while at Kontron Electronics, Inc.
+These are the sources to the latest/last version of CP/M 2.2 I developed for this machine back in the day (1980s LOL) while at Kontron Electronics, Inc.
 
 <b>The 58kCPMv1.85_work folder:</b><br>
 This folder contains an image of the working directory taken from a backup of my 35mb hard drive. This contains both sources to the CP/M system and various utilities used to create the CP/M image. Also present are various utilities used for formatting disks, setting serial parameters and such under 2300 ADS CP/M.
