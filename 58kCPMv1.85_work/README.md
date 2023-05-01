@@ -39,7 +39,7 @@ be tidy.<br>
 <b>ACOPYSYS 0 B</b><br>
 
 Then, hit the \<LOAD\> key. Place the newly created boot floppy from drive B: into the
-boot drive. At the bootprom's promt, the \<C\>\<RETURN\> to boot CP/M.
+boot drive. At the bootprom's promt, type \<C\>\<RETURN\> to boot CP/M.
 
 The "winbuild" folder under the 2300ADS-CPM github contains the same files, but pre-packed
 with the Z80-SIM CP/M emulator which runs on Windows. Z80-SIM is just enough CP/M to
