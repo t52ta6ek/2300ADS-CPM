@@ -80,7 +80,7 @@ ACOPYSYS.COM  - The end product of the build is the ADS CPM's "sysgen" utility<b
 ACOPYSYS.MAP  - Plink linker-created MAP file<br>
 
 <b>Experimental boot EPROM</b><br>
-This can be used to turn an NCP control unit into a headless CP/M system. A 2732 EPROM was used in this system. This bootloader was derived from the floppy driver. It simply attempts to boot CP/M from drive unit 0 (A:) in an endless loop. The boot disk would have been preconfigured using the ASETSIO and ASETIO utilities to use the TTY device (SIO1) as the console. A dumb-terminal connected to SIO1 is then used as the console.<br>
+This can be used to turn an NCP control unit into a headless CP/M system. A 2732 EPROM was used in this system. This bootloader was derived from the floppy driver. It simply attempts to boot CP/M from Drive 0 (A:). The boot disk would have been preconfigured using the ASETSIO and ASETIO utilities to use the TTY device (SIO1) as the console. A dumb-terminal connected to SIO1 is then used as the console.<br>
 BOOTPROM.MAC  - Experimental boot EPROM for Network Control Processor.<br> 
 BOOTPROM.LNK  - PLinkII linker command file for BOOTPROM.MAC<br>
 
