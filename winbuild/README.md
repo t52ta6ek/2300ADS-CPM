@@ -8,7 +8,7 @@ natively under ADS CP/M itself.
 
 Instructions:
 
-1. Extract the contents of the DSDD_WORK.zip file into a folder in Windows called DSDD_WORK.
+1. Extract the contents of the DSDD_WORK.zip file into a folder in Windows called DSDD_WORK.<br>
 Right-click DSDD_WORK.zip and "Extract All..." and a new folder DSDD_WORK will be created.<br>
 (SHA-1 of DSDD_WORK.zip is 36183d244df1d3cca08a4cafd9e93b9043dbd5f2)
 
@@ -29,7 +29,20 @@ you actually generate an 8" CP/M boot floppy for your system?
 
 Some thoughts...
 
-It should be possible to extract a memory image of my running system. The 2300 ADS boot EPROM
-could be modifed to accept, say Intel HEX from SIO1 write that to memory. Control could then
-be passed off to CP/M itself, i.e. getting the CP/M image from the RS-232 port rather from
-floppy.
+It should be possible to extract a memory image of my running system with ACOPYSYS still in
+memory of 0100H. The 2300 ADS boot EPROM could be modifed to accept, say Intel HEX from SIO1
+write that to memory. Control could then be passed off to CP/M itself, i.e. getting the CP/M
+image from the RS-232 port rather from floppy.
+
+The ACOPSYS.MAP file describes where in memory each of the sections should be loaded. If you
+have the means, you could also create your own boot EPROM as described above, then extact
+the binary sections from ACOPYSYS.COM, get those into memory, then cold boot to CP/M. The
+BOOTPROM.MAC file shows a minimal bootloader (booting from floppy) that you can use as an
+an example boot EPROM. The trick is to also load ACOPYSYS.COM also into memory starting at
+0100H, then once you get to the CP/M command promt, type:<br>
+<b>X 0 A</b><br>
+
+This will instruct ZCPR to run the current program from memory (ACOPYSYS), then create a CP/M
+boot floppy on your floppy in Drive A:. Put the original boot EPROM back into the system.
+
+At the bootprom's promt, the \<C\>\<RETURN\> to boot CP/M.
