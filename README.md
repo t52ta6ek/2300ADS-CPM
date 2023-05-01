@@ -9,7 +9,7 @@ This folder contains an image of the working directory taken from a backup of my
 ## The winbuild folder
 This folder contains the various files described above, but pre-packed with the Z80-SIM CP/M emulator. You can download and unpack the .zip file under Windows and perform the build of the entire CP/M 2.2 system for the 2300 ADS.
 
-## Repairs
+## Repair tips
 - Keyboard unit - The Mylar foil can degrade in these Keytronic capacitive keyboards. The result is you may notice some keys work and some do not. The repair is easy with replacement foam from texELEC (link below). I reported back to texELEC success repairing two keyboards with their replacement foam for this system.
 
 - Static RAM - Seems these don't last forever either. Intel P2141-3 4k x 1 static RAMs on the 64k static RAM board may fail with time. If boot prompt appears, but you can't boot RDOS, UDOS, or CP/M, you can use the built-in memory dump in the boot EPROM to try and localize the memory range. Knowing the range, the exact chip can be localized on the board.
