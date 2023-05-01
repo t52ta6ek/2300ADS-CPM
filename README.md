@@ -12,7 +12,7 @@ This folder contains the various files described above, but pre-packed with the 
 ## Repair tips
 - Keyboard unit - The Mylar foil can degrade in these Keytronic capacitive keyboards. The result is you may notice some keys work and some do not. The repair is easy with replacement foam from texELEC (link below). I reported back to texELEC success repairing two keyboards with their replacement foam for this system.
 
-- Static RAM - Seems these don't last forever either. Intel P2141-3 4k x 1 static RAMs on the 64k static RAM board may fail with time. If boot prompt appears, but you can't boot RDOS, UDOS, or CP/M, you can use the built-in memory dump in the boot EPROM to try and localize the memory range. Knowing the range, the exact chip can be localized on the board.
+- Static RAM - Seems these don't last forever either. Intel P2141-3 4k x 1 static RAMs on the 64k static RAM board may fail with time. If boot prompt appears, but you can't boot GenRad/FutureData RDOS, UDOS, or CP/M, you can use the built-in memory dump in the boot EPROM to try and localize the memory range. Knowing the range, the exact chip can be localized on the board.
 
 - 8" Floppy drive - black sponge foam was used in places for absorbing shock when opening and closing drive doors. If your floppy sticks when attempting to eject, see if your floppy drive has such foam and if it's become a sticky mess.
 
