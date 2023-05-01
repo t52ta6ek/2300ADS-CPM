@@ -42,7 +42,8 @@ an example boot EPROM. The trick is to also load ACOPYSYS.COM also into memory s
 0100H, then once you get to the CP/M command promt, type:<br>
 <b>X 0 A</b><br>
 
-This will instruct ZCPR to run the current program from memory (ACOPYSYS), then create a CP/M
-boot floppy on your floppy in Drive A:. Put the original boot EPROM back into the system.
+This will instruct ZCPR to run the current program already in memory (ACOPYSYS), then place the
+CP/M image contained in ACOPSYS' memory to boot floppy on your in Drive A:. Finally, put the
+original boot EPROM back into the system.
 
-At the bootprom's promt, the \<C\>\<RETURN\> to boot CP/M.
+Power up and at the bootprom's promt, the \<C\>\<RETURN\> to boot CP/M.
