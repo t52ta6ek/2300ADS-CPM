@@ -69,11 +69,17 @@ UP2.MAC       - Serial port 4 output support<br>
 UR1.MAC       - Serial port 3 input support<br>
 UR2.MAC       - Serial port 4 input support<br>
 ZCPR.MAC      - ZCPR 4.0 shell<br>
+
+<b>Assemble and Link To produce ACOPYSYS.COM sysgen utility</b><br> 
 ASM.SUB       - Batch file for performing the assembly builds<br>
-CPM58K.LNK    - PLinkII linker command file for creating ADS CP/M ACOPSYS.COM<br>
+CPM58K.LNK    - PLinkII linker command file for creating the sysgen utlity ACOPYSYS.COM<br>
+ACOPYSYS.MAC  - system boot disk creation utility<br>
+ACOPYSYS.COM  - The end product of the build is the ADS CPM's "sysgen" utility<br>
+ACOPYSYS.MAP  - Plink linker-created MAP file<br>
 
 <b>Experimental boot EPROM</b><br>
-BOOTPROM.MAC  - Experimental boot EPROM for Network Control Processer. This can be used to turn an NCP control unit into a headless CP/M system.<br>
+This can be used to turn an NCP control unit into a headless CP/M system.<br>
+BOOTPROM.MAC  - Experimental boot EPROM for Network Control Processer. 
 BOOTPROM.LNK  - PLinkII linker command file for BOOTPROM.MAC<br>
 
 <b>Utilities Required To Build 2300 ADS CP/M</b><br>
@@ -82,11 +88,9 @@ M80.COM       - Microsoft M80 Macro Assembler<br>
 PLINK.COM     - PSA Linkage Editor II<br>
 ZAP.COM       - Zero unused memory<br>
 
-<b>Utilities Specically Created for the 2300 ADS CP/M</b><br>
+<b>Utilities Specically Created for the 2300 58k ADS CP/M 2.2 v1.85</b><br>
+Some of these utilities were implmented in Turbo Pascal. The source code for these will be forthcoming.<br> 
 AAUTOST.COM   - Utility to set initial command to run after CP/M boots<br>
-ACOPYSYS.MAC  - system boot disk creation utility<br>
-ACOPYSYS.COM  - ADS CPM's "sysgen" utility<br>
-ACOPYSYS.MAP  - Plink linker-created MAP file<br>
 AFORMAT.MAC   - Floppy format utility<br>
 AFORMAT.COM   - Disk format utility<br>
 AFORMAT2.COM  - Alternate disk format utility implemented in Turbo Pascal<br>
@@ -99,7 +103,7 @@ ASETSIO.COM   - Utility to set serial port parameters<br>
 NCPINIT.COM   - Utility to format local 35mb NCP hard disk drive<br>
 
 <b>Programs Configured for 2300 ADS CP/M</b><br>
-MDM7.COM      - MDM7 used for most day to day activies, calling BBSes, uploads/downloads<br>
+MDM7.COM      - MDM7 I used for most day to day activies, calling BBSes, uploads/downloads<br>
 WASH.COM      - WASH v3.6 for ADS CP/M<br>
 WS.COM        - WordStar 3.30 configured for ADS CP/M and NEC Spinwriter printer which I used at that time<br>
 WSMSGS.OVR    - WordStar 3.30<br>
