@@ -91,12 +91,12 @@ PLINK.COM     - PSA Linkage Editor II<br>
 ZAP.COM       - Zero unused memory<br>
 
 <b>Utilities specifically created for 2300 58k ADS CP/M 2.2 v1.85</b><br>
-Most of these utilities were implemented in Turbo Pascal. The source code for these will be forthcoming. The utilities only work with this specific version of the operating system as they access CBIOS internal data structures.<br> 
-AAUTOST.COM   - Utility to set initial command to run after CP/M boots<br>
+The AAUTOST, AFORMAT2, ASETDRV, ASETDSK, NCPINIT utilities were implemented in Turbo Pascal. The source code for all these will be posted if I am ever able to find them. The utilities only work with this specific 1.85 version of the operating system as they access CBIOS internal data structures.<br> 
+AAUTOST.COM   - Utility to specify an initial command to run after CP/M boots<br>
 AFORMAT.MAC   - 8" floppy disk formatter source<br>
 AFORMAT.COM   - Disk format utility<br>
 AFORMAT2.COM  - Alternate disk format utility implemented in Turbo Pascal<br>
-AMODEM7.COM   - Original implementation of Modem7 for ADS CP/M.<br>
+AMODEM7.COM   - Original implementation of Modem7 delivered with ADS CP/M.<br>
 ASETDRV.COM   - Utility to allow custom associations of CP/M drive letters to specific controllers/drive units<br>
 ASETDSK.COM   - Utility to set which drives are SSDD and DSDD<br>
 ASETIO.COM    - Utility to set the CP/M I/O byte<br>
