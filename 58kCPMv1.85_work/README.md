@@ -55,7 +55,7 @@ CRT.MAC       - Console CRT and Keyboard drivers. Nominal emulation of ADDS View
 DEFAULTS.MAC  - Default serial port and console settings<br>
 DHDISK.MAC    - Dummy hard disk - to delete hard disk support<br>
 FLOPPY.MAC    - Micropolis floppy disk controller<br>
-HDISK.MAC     - Local NCP Hard disk drivers<br>
+HDISK.MAC     - Local NCP Hard disk drivers. Micropolis controller and 8" hard drive unit.<br>
 LPT.MAC       - LPT device (parallel port)<br>
 MEU.MAC       - Memory Expansion Unit RAM disk driver<br>
 PTP.MAC       - Paper tape punch (serial port 2)<br>
