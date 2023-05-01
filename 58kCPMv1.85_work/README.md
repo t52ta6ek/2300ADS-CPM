@@ -16,7 +16,7 @@ used for editing code, performing the build, formatting disks and other various
 system generation tools I used at that time.
 
 Some of the utilities were developed in assembly, others I developed using Turbo Pascal.
-When I locate the sources to these utilties, they will be posted as well.
+When I locate the sources to these utilities, they will be posted as well.
 
 The original 2300 ADS system was delivered with two 8" SSDD floppies. It was possible
 to swap these out for DSDD floppies. Additionally, this CP/M supports the Memory
@@ -38,7 +38,7 @@ be tidy.<br>
 <b>ZAP</b><br>
 <b>ACOPYSYS 0 B</b><br>
 
-Then, hit the \<LOAD\> key. Place the newly created bootfloppy from drive B: into the
+Then, hit the \<LOAD\> key. Place the newly created boot floppy from drive B: into the
 boot drive. At the bootprom's promt, the \<C\>\<RETURN\> to boot CP/M.
 
 The "winbuild" folder under the 2300ADS-CPM github contains the same files, but pre-packed
@@ -72,26 +72,26 @@ UR1.MAC       - Serial port 3 input support<br>
 UR2.MAC       - Serial port 4 input support<br>
 ZCPR.MAC      - ZCPR 4.0 shell<br>
 
-<b>Assemble and Link To produce ACOPYSYS.COM sysgen utility</b><br> 
+<b>Assemble and Link to produce ACOPYSYS.COM sysgen utility</b><br> 
 ASM.SUB       - Batch file for performing the assembly builds<br>
-CPM58K.LNK    - PLinkII linker command file for creating the sysgen utlity ACOPYSYS.COM<br>
+CPM58K.LNK    - PLinkII linker command file for creating the sysgen utility ACOPYSYS.COM<br>
 ACOPYSYS.MAC  - system boot disk creation utility<br>
 ACOPYSYS.COM  - The end product of the build is the ADS CPM's "sysgen" utility<br>
 ACOPYSYS.MAP  - Plink linker-created MAP file<br>
 
 <b>Experimental boot EPROM</b><br>
 This can be used to turn an NCP control unit into a headless CP/M system.<br>
-BOOTPROM.MAC  - Experimental boot EPROM for Network Control Processer. 
+BOOTPROM.MAC  - Experimental boot EPROM for Network Control Processor. 
 BOOTPROM.LNK  - PLinkII linker command file for BOOTPROM.MAC<br>
 
-<b>Utilities Required To Build 2300 ADS CP/M</b><br>
+<b>Utilities required to build 2300 ADS CP/M</b><br>
 DO.COM        - DO 1.5<br>
 M80.COM       - Microsoft M80 Macro Assembler<br>
 PLINK.COM     - PSA Linkage Editor II<br>
 ZAP.COM       - Zero unused memory<br>
 
-<b>Utilities Specically Created for the 2300 58k ADS CP/M 2.2 v1.85</b><br>
-Some of these utilities were implmented in Turbo Pascal. The source code for these will be forthcoming.<br> 
+<b>Utilities specifically created for 2300 58k ADS CP/M 2.2 v1.85</b><br>
+Some of these utilities were implemented in Turbo Pascal. The source code for these will be forthcoming. The utilities only work with this specific version of the operating system.<br> 
 AAUTOST.COM   - Utility to set initial command to run after CP/M boots<br>
 AFORMAT.MAC   - Floppy format utility<br>
 AFORMAT.COM   - Disk format utility<br>
@@ -104,14 +104,14 @@ ASETSIO.MAC   - Utility for setting RS-232 serial parameters<br>
 ASETSIO.COM   - Utility to set serial port parameters<br>
 NCPINIT.COM   - Utility to format local 35mb NCP hard disk drive<br>
 
-<b>Programs Configured for 2300 ADS CP/M</b><br>
-MDM7.COM      - MDM7 I used for most day to day activies, calling BBSes, uploads/downloads<br>
+<b>Programs configured for 2300 ADS CP/M</b><br>
+MDM7.COM      - MDM7 I used for most day to day activities, calling BBSes, uploads/downloads<br>
 WASH.COM      - WASH v3.6 for ADS CP/M<br>
 WS.COM        - WordStar 3.30 configured for ADS CP/M and NEC Spinwriter printer which I used at that time<br>
 WSMSGS.OVR    - WordStar 3.30<br>
 WSOVLY1.OVR   - WordStar 3.30<br>
 
-<b>Other Off-The-Shelf Utlities</b><br>
+<b>Other off-the-shelf utilities</b><br>
 ARK.COM       - ARK v1.1<br>
 CRCK.COM      - CRCK v5.1<br>
 DU.COM        - DU2 v1.7<br>
