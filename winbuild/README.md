@@ -30,21 +30,21 @@ you actually generate an 8" CP/M boot floppy for your system?
 
 Some thoughts...
 
-It should be possible to extract a memory image of my running system with ACOPYSYS still in
+It should be possible to extract a 64k memory image of my running system with ACOPYSYS still in
 memory of 0100H. The 2300 ADS boot EPROM could be modifed to accept, say Intel HEX from SIO1
-write that to memory. Control could then be passed off to CP/M itself, i.e. getting the CP/M
-image from the RS-232 port rather from floppy.
+write that to memory. Control could then be passed off to CP/M itself. In effect, populate
+memory with a snapshot of a running system.
 
 The ACOPSYS.MAP file describes where in memory each of the sections should be loaded. If you
-have the means, you could also create your own boot EPROM as described above, then extact
+have the means, you could also create your own modified boot EPROM as suggested above, then extact
 the binary sections from ACOPYSYS.COM, get those into memory, then cold boot to CP/M. The
 BOOTPROM.MAC file shows a minimal bootloader (booting from floppy) that you can use as an
 an example boot EPROM. The trick is to also load ACOPYSYS.COM also into memory starting at
 0100H, then once you get to the CP/M command promt, type:<br>
 <b>X 0 A</b><br>
 
-This will instruct ZCPR to run the current program already in memory (ACOPYSYS), then place the
-CP/M image contained in ACOPSYS' memory to boot floppy on your in Drive A:. Finally, put the
+This will instruct ZCPR to run the current program already in memory (ACOPYSYS), then write the
+CP/M image contained in ACOPYSYS' memory to boot floppy on your in Drive A:. Finally, put the
 original boot EPROM back into the system.
 
-Power up and at the bootprom's promt, the \<C\>\<RETURN\> to boot CP/M.
+Power up the 2300 ADS unit and at the boot promt, type \<C\>\<RETURN\> to boot CP/M.
