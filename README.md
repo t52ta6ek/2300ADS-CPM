@@ -24,3 +24,8 @@ Should you have any questions, I can still offer limited assistance with this ma
 http://bitsavers.trailing-edge.com/pdf/futuredata/ <br>
 https://texelec.com/product/foam-capacitive-pads-keytronic/ <br>
 http://bbslist.textfiles.com/213/oldschool.html (see entry for YARBBS) <br>
+
+<b>Honorable mention (PolyMorphic Systems 8813 - the other computer):</b><br>
+http://bitsavers.trailing-edge.com/pdf/polyMorphicSystems/ <br>
+https://deramp.com/polymorphic-computers/ <br>
+
