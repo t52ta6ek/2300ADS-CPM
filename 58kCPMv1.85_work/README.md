@@ -62,7 +62,7 @@ LPT.MAC       - LPT device (parallel port)<br>
 MEU.MAC       - Memory Expansion Unit RAM disk driver<br>
 PTP.MAC       - Paper tape punch (serial port 2)<br>
 PTR.MAC       - Paper tape reader (serial port 2)<br>
-REINIT.MAC    - Reinitialize peripherals that were reset by \<RESET\><br>
+REINIT.MAC    - Reinitialize peripherals that were reset if \<RESET\> keypressed<br>
 TABLES.MAC    - Used by REINIT.MAC to reload console and serial settings<br>
 TTY.MAC       - Serial TTY (serial port 1)<br>
 UL1.MAC       - Serial printer (serial port 2)<br>
