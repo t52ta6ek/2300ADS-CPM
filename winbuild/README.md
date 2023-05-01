@@ -3,7 +3,7 @@ allow you to experiment and rebuild the system under Windows. Descriptions of th
 content can be found there.
 
 The Z80-SIM CP/M 2.2 emulator is a minimal implementation of CP/M and does allow DO.COM
-to run properly, so building the system differs just slightly to how it would be build
+to run properly, so building the system differs just slightly to how I would have built
 natively under ADS CP/M itself.
 
 Instructions:
