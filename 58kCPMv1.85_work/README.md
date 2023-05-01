@@ -47,37 +47,37 @@ allow you to rebuild the the system, and product the ACOPYSYS.COM system generat
 tool. See that folder for specific instruction to perform the build.
 
 ## 2300 ADS 58k CP/M 2.2 v1.85
-- ADSCHG.TXT    - ADS CP/M revisions list<br>
-- ADSBOOT.MAC   - CP/M coldboot loader<br>
-- BDOS.MAC      - CP/M 2.2 BDOS<br>
-- EQUATES.LIB   - definitions for BDOS.MAC<br>
-- BOOTMSG.MAC   - Console boot message after CP/M boots<br>
-- CBIOS.MAC     - 2300 ADS CBIOS<br>
-- CRT.MAC       - Console CRT and Keyboard drivers. Nominal emulation of ADDS Viewpoint control codes<br>
-- DEFAULTS.MAC  - Default serial port and console settings<br>
-- DHDISK.MAC    - Dummy hard disk - to delete hard disk support<br>
-- FLOPPY.MAC    - Micropolis floppy disk controller<br>
-- HDISK.MAC     - Local NCP Hard disk drivers. Micropolis controller and 8" hard drive unit.<br>
-- LPT.MAC       - LPT device (parallel port)<br>
-- MEU.MAC       - Memory Expansion Unit RAM disk driver<br>
-- PTP.MAC       - Paper tape punch (serial port 2)<br>
-- PTR.MAC       - Paper tape reader (serial port 2)<br>
-- REINIT.MAC    - Reinitialize peripherals that were reset if \<RESET\> keypressed<br>
-- TABLES.MAC    - Used by REINIT.MAC to reload console and serial settings<br>
-- TTY.MAC       - Serial TTY (serial port 1)<br>
-- UL1.MAC       - Serial printer (serial port 2)<br>
-- UP1.MAC       - Serial port 3 output support<br>
-- UP2.MAC       - Serial port 4 output support<br>
-- UR1.MAC       - Serial port 3 input support<br>
-- UR2.MAC       - Serial port 4 input support<br>
-- ZCPR.MAC      - ZCPR 4.0 shell<br>
+- ADSCHG.TXT    - ADS CP/M revisions list
+- ADSBOOT.MAC   - CP/M coldboot loader
+- BDOS.MAC      - CP/M 2.2 BDOS
+- EQUATES.LIB   - definitions for BDOS.MAC
+- BOOTMSG.MAC   - Console boot message after CP/M boots
+- CBIOS.MAC     - 2300 ADS CBIOS
+- CRT.MAC       - Console CRT and Keyboard drivers. Nominal emulation of ADDS Viewpoint control codes
+- DEFAULTS.MAC  - Default serial port and console settings
+- DHDISK.MAC    - Dummy hard disk - to delete hard disk support
+- FLOPPY.MAC    - Micropolis floppy disk controller
+- HDISK.MAC     - Local NCP Hard disk drivers. Micropolis controller and 8" hard drive unit.
+- LPT.MAC       - LPT device (parallel port)
+- MEU.MAC       - Memory Expansion Unit RAM disk driver
+- PTP.MAC       - Paper tape punch (serial port 2)
+- PTR.MAC       - Paper tape reader (serial port 2)
+- REINIT.MAC    - Reinitialize peripherals that were reset if \<RESET\> keypressed
+- TABLES.MAC    - Used by REINIT.MAC to reload console and serial settings
+- TTY.MAC       - Serial TTY (serial port 1)
+- UL1.MAC       - Serial printer (serial port 2)
+- UP1.MAC       - Serial port 3 output support
+- UP2.MAC       - Serial port 4 output support
+- UR1.MAC       - Serial port 3 input support
+- UR2.MAC       - Serial port 4 input support
+- ZCPR.MAC      - ZCPR 4.0 shell
 
 ## Assemble and Link to produce ACOPYSYS.COM sysgen utility
-- ASM.SUB       - Batch file for performing the assembly builds<br>
-- CPM58K.LNK    - PLinkII linker command file for creating the sysgen utility ACOPYSYS.COM<br>
-- ACOPYSYS.MAC  - Sources for system boot disk creation utility<br>
-- ACOPYSYS.COM  - The end product of the build is the ADS CPM's "sysgen" utility<br>
-- ACOPYSYS.MAP  - Plink linker-created MAP file<br>
+- ASM.SUB       - Batch file for performing the assembly builds
+- CPM58K.LNK    - PLinkII linker command file for creating the sysgen utility ACOPYSYS.COM
+- ACOPYSYS.MAC  - Sources for system boot disk creation utility
+- ACOPYSYS.COM  - The end product of the build is the ADS CPM's "sysgen" utility
+- ACOPYSYS.MAP  - Plink linker-created MAP file
 
 ## Experimental boot EPROM
 This can be used to turn an NCP control unit into a headless CP/M system. A 2732 EPROM was used in this system. This bootloader was derived from the floppy driver. It simply attempts to boot CP/M from Drive 0 (A:). The boot disk would have been preconfigured using the ASETSIO and ASETIO utilities to use the TTY device (SIO1) as the console. A dumb-terminal connected to SIO1 is then used as the console.<br>
@@ -85,47 +85,51 @@ This can be used to turn an NCP control unit into a headless CP/M system. A 2732
 - BOOTPROM.LNK  - PLinkII linker command file for BOOTPROM.MAC<br>
 
 ## Utilities required to build 2300 ADS CP/M
-- DO.COM        - DO 1.5 (Note: SUBMIT.COM may be used in place of DO.COM)<br>
-- M80.COM       - Microsoft M80 Macro Assembler<br>
-- PLINK.COM     - PSA Linkage Editor II<br>
-- ZAP.COM       - Zero unused memory<br>
+- DO.COM        - DO 1.5 as delivered with 2300 ADS CP/M (SUBMIT.COM may be used in place of DO.COM)
+- M80.COM       - Microsoft M80 Macro Assembler
+- PLINK.COM     - PSA Linkage Editor II
+- ZAP.COM       - Zero unused memory
 
 ## Utilities specifically created for 2300 58k ADS CP/M 2.2 v1.85
-The AAUTOST, AFORMAT2, ASETDRV, ASETDSK, NCPINIT utilities were implemented in Turbo Pascal. The source code for all these will be posted if I am ever able to find them. The utilities only work with this specific 1.85 version of the operating system as they access CBIOS internal data structures.<br> 
-- AAUTOST.COM   - Utility to specify an initial command to run after CP/M boots<br>
-- AFORMAT.MAC   - 8" floppy disk formatter source<br>
-- AFORMAT.COM   - Disk format utility<br>
-- AFORMAT2.COM  - Alternate disk format utility implemented in Turbo Pascal<br>
-- AMODEM7.COM   - Original implementation of Modem7 delivered with ADS CP/M.<br>
-- ASETDRV.COM   - Utility to allow custom associations of CP/M drive letters to specific controllers/drive units<br>
-- ASETDSK.COM   - Utility to set which drives are SSDD and DSDD<br>
-- ASETIO.COM    - Utility to set the CP/M I/O byte<br>
-- ASETSIO.MAC   - Source code for utility for setting RS-232 serial parameters<br>
-- ASETSIO.COM   - Utility to set serial port parameters<br>
-- NCPINIT.COM   - Utility to format local 35mb NCP hard disk drive<br>
+The AAUTOST, AFORMAT2, ASETDRV, ASETDSK, ASETIO, NCPINIT utilities were implemented in Turbo Pascal. The source code for all these will be posted if I am ever able to find them. Many utilities only work with this specific 1.85 version of the operating system as they access CBIOS internal data structures at specific memory and disk locations.<br> 
+
+### Written in Turbo Pascal
+- AAUTOST.COM   - Utility to specify an initial command to run after CP/M boots
+- AFORMAT2.COM  - Alternate disk format utility implemented in Turbo Pascal
+- ASETDRV.COM   - Utility to allow custom associations of CP/M drive letters to specific controllers/drive units
+- ASETDSK.COM   - Utility to set which drives are SSDD and DSDD
+- ASETIO.COM    - Utility to set the CP/M I/O byte
+- NCPINIT.COM   - Utility to format local 35mb NCP hard disk drive
+
+### Written in Z80 assembly
+- AFORMAT.MAC   - 8" floppy disk formatter source
+- AFORMAT.COM   - Disk format utility
+- ASETSIO.MAC   - Source code for utility for setting RS-232 serial parameters
+- ASETSIO.COM   - Utility to set serial port parameters
 
 ## Programs configured for 2300 ADS CP/M
-- MDM7.COM      - MDM7 I used for most day to day activities, calling BBSes, uploads/downloads<br>
-- WASH.COM      - WASH v3.6 for ADS CP/M<br>
-- WS.COM        - WordStar 3.30 configured for ADS CP/M and NEC Spinwriter printer which I used at that time<br>
-- WSMSGS.OVR    - WordStar 3.30<br>
-- WSOVLY1.OVR   - WordStar 3.30<br>
+- AMODEM7.COM   - Original implementation of Modem7 delivered with ADS CP/M.
+- MDM7.COM      - MDM7 I used for most day to day activities, calling BBSes, uploads/downloads
+- WASH.COM      - WASH v3.6 for ADS CP/M
+- WS.COM        - WordStar 3.30 configured for ADS CP/M and NEC Spinwriter printer which I used at that time
+- WSMSGS.OVR    - WordStar 3.30
+- WSOVLY1.OVR   - WordStar 3.30
 
-## Other off-the-shelf utilities
-- ARK.COM       - ARK v1.1<br>
-- CRCK.COM      - CRCK v5.1<br>
-- DU.COM        - DU2 v1.7<br>
-- DUMP.COM      - DUMP v1.0<br>
-- FBAD.COM      - FBAD57<br>
-- MEMR.COM      - Memory test program<br>
-- NULU.COM      - NULU v1.0<br>
-- PIP.COM       - PIP v1.5 as delivered with 2300 ADS CP/M<br>
-- RECLAIM.COM   - RECLAIM v2.1<br>
-- SAP.COM       - SAP v4.2<br>
-- STAT.COM      - CP/M STAT as delivered with 2300 ADS CP/M<br>
-- UNARC.COM     - UNARC v1.6<br>
-- UNERA.COM     - UNERA v2.2<br>
-- USQ.COM       - USQ v1.18<br>
-- XOUT.COM      - XOUT for XSUB as delivered with 2300 ADS CP/M<br>
-- XSUB.COM      - XSUB v1.4 as delivered with 2300 ADS CP/M<br>
-- ZSID.COM      - ZSID v1.4 as delivered with 2300 ADS CP/M<br>
+## Other generic off-the-shelf utilities
+- ARK.COM       - ARK v1.1
+- CRCK.COM      - CRCK v5.1
+- DU.COM        - DU2 v1.7
+- DUMP.COM      - DUMP v1.0
+- FBAD.COM      - FBAD57
+- MEMR.COM      - Memory test program
+- NULU.COM      - NULU v1.0
+- PIP.COM       - PIP v1.5 as delivered with 2300 ADS CP/M
+- RECLAIM.COM   - RECLAIM v2.1
+- SAP.COM       - SAP v4.2
+- STAT.COM      - CP/M STAT as delivered with 2300 ADS CP/M
+- UNARC.COM     - UNARC v1.6
+- UNERA.COM     - UNERA v2.2
+- USQ.COM       - USQ v1.18
+- XOUT.COM      - XOUT for XSUB as delivered with 2300 ADS CP/M
+- XSUB.COM      - XSUB v1.4 as delivered with 2300 ADS CP/M
+- ZSID.COM      - ZSID v1.4 as delivered with 2300 ADS CP/M
