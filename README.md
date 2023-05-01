@@ -16,5 +16,5 @@ Should you have any, I can still offer limited assistance with any questions abo
 
 <b>Related sites of interest:</b><br>
 http://bitsavers.trailing-edge.com/pdf/futuredata/ <br>
-https://texelec.com/product/foam-capacitive-pads-keytronic/
-http://bbslist.textfiles.com/213/oldschool.html (see entry for YARBBS)
+https://texelec.com/product/foam-capacitive-pads-keytronic/ <br>
+http://bbslist.textfiles.com/213/oldschool.html (see entry for YARBBS) <br>
