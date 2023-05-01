@@ -14,7 +14,7 @@ Static RAM - Seems these don't last forever either. Intel P2141-3 4k x 1 static 
 
 8" Floppy drive - black sponge foam was used in places for absorbing shock when opening and closing drive doors. If your floppy sticks when attempting to eject, see if your floppy drive has such foam and if it's become a sticky mess.
 
-Should you have any, I can still offer limited assistance with any questions about this machine.
+Should you have any questions, I can still offer limited assistance with this machine.
 
 <b>Related sites of interest:</b><br>
 http://bitsavers.trailing-edge.com/pdf/futuredata/ <br>
