@@ -85,7 +85,7 @@ BOOTPROM.MAC  - Experimental boot EPROM for Network Control Processor.<br>
 BOOTPROM.LNK  - PLinkII linker command file for BOOTPROM.MAC<br>
 
 <b>Utilities required to build 2300 ADS CP/M</b><br>
-DO.COM        - DO 1.5<br>
+DO.COM        - DO 1.5 (Note: SUBMIT.COM may be used in place of DO.COM)<br>
 M80.COM       - Microsoft M80 Macro Assembler<br>
 PLINK.COM     - PSA Linkage Editor II<br>
 ZAP.COM       - Zero unused memory<br>
