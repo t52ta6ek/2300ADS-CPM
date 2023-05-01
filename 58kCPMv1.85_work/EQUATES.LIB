@@ -1,0 +1,73 @@
+;
+; system equates
+;
+cpbase	equ	0
+cpm	equ	cpbase+0		;warm boot location
+bdos	equ	cpbase+5		;bdos interface	jump
+fcb1	equ  	cpbase+05ch		;default fcb 1
+fcb2	equ	fcb1+16			;   "	 fcb 2
+cbuf	equ	cpbase+80h		;command buffer
+tpa	equ	cpbase+100h	       	;start of transient program area
+cbiosjp	equ	0e600h			;CBIOS jump table address
+ 
+; non-disk I/O BDOS function codes
+ 
+conin	equ	1			;console input
+conout	equ	2			;   "	 output
+lstout	equ	5			;list device output
+prtbuf	equ	9			;string	to console
+rdbuf	equ	10			;read console buffer
+constat	equ	11			;console status
+vers	equ	12			;CP/M version number
+usercod	equ	32	      		;get/set user code
+ 
+; disk I/O functions
+ 
+seldsk	equ	14			;select	drive
+openf	equ	15			;open a	file
+closef	equ	16     			;close a file
+deletf	equ	19			;delete	a file
+readf	equ	20			;read a	file sector
+writef	equ	21			;write a file sector
+makef	equ	22			;create	a file
+setdma	equ	26			;set I/O buffer	address
+sizef	equ	35			;get file's size
+srchf	equ	17			;search	for 1st	ambiguous file name
+srchn	equ	18			;search	for next ambiguous name
+ 
+; Those	BDOS functions that require a byte parameter take it in	E;
+; word parameters are passed in	DE.  Return codes are passed back in A;
+; a code of zero generally indicates success, while 0ffh indicates failure.
+ 
+;
+; BIOS entry-points
+;
+bboot	equ	0
+bwboot	equ	3
+bconst	equ	6
+bconin	equ	9
+bconout	equ	0ch
+blist	equ	0fh
+bpunch	equ	12h
+breader	equ	15h
+bhome	equ	18h
+bseldsk	equ	1bh
+bsettrk	equ	1eh
+bsetsec	equ	21h
+bsetdma	equ	24h
+bread	equ	27h
+bwrite	equ	2ah
+ 
+; character equates
+ 
+cr	  equ	  0dh
+lf	  equ	  0ah
+esc	  equ	  1bh
+eof   	  equ	  1ah
+bell	  equ	  7
+bs	  equ	  8			 ;backspace
+tab	  equ	  9
+ 
+false	  equ	  0
+true	  equ	  0ffh
+

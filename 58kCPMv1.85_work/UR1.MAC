@@ -1,0 +1,45 @@
+;
+; *****
+; ***** UR1 DRIVER
+; ***** TOM DE LELLIS
+; ***** 11/29/85
+; *****
+;
+	.Z80
+	CSEG
+;
+	PUBLIC	UR1IST
+	PUBLIC	UR1IN
+;
+SIO3DAT	EQU	X'A0'			; SIO3 DATA I/O PORT
+SIO3STA	EQU	X'A1'			; SIO3 STATUS PORT
+;
+RXRDY	EQU	X'02'			; RCRV BUFFER FULL
+;
+TRUE	EQU	X'FF'
+FALSE	EQU	X'00'
+;
+; *****
+; ***** GET INPUT STATUS
+; *****
+;
+UR1IST:
+	IN	A,(SIO3STA)		; GET STATUS
+	AND	RXRDY			; CHECK FOR DATA
+	RET	Z			; RETURN 0 IF NONE
+	CPL				; NOT 0
+	RET				; RETURN
+;
+; *****
+; ***** INPUT DATA
+; *****
+;
+UR1IN:
+	IN	A,(SIO3STA)		; GET STATUS
+	AND	RXRDY			; BIT SET?
+	JR	Z,UR1IN			; IF NOT WAIT
+	IN	A,(SIO3DAT)		; GET DATA
+	RET				; EXIT	
+;
+	END
+

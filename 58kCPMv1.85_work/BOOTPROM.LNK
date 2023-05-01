@@ -1,0 +1,9 @@
+	MSOFT
+
+	LO	0100H
+	OUT	BOOTPROM.IMG
+	AC	0E000H
+	FI	BOOTPROM.REL
+	MAP	A
+	REPORT
+

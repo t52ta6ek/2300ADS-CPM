@@ -1,0 +1,44 @@
+;
+; *****
+; ***** PTR DRIVER
+; ***** TOM DE LELLIS
+; ***** 11/29/85
+; *****
+;
+	.Z80
+	CSEG
+;
+	PUBLIC	PTRIST
+	PUBLIC	PTRIN
+;
+SIO2DAT	EQU	X'C4'			; SIO1 DATA I/O PORT
+SIO2STA	EQU	X'C5'			; SIO1 STATUS PORT
+;
+RXRDY	EQU	X'02'			; RCRV BUFFER FULL
+;
+TRUE	EQU	X'FF'
+FALSE	EQU	X'00'
+;
+; *****
+; ***** GET INPUT STATUS
+; *****
+;
+PTRIST:
+	IN	A,(SIO2STA)		; GET STATUS
+	AND	RXRDY			; DATA AVAIL?
+	RET	Z			; RETURN 0 IF NOT
+	CPL				; NOT 0
+	RET				; RET
+;
+; *****
+; ***** OUTPUT DATA
+; *****
+;
+PTRIN:	IN	A,(SIO2STA)		; GET STATUS
+	AND	RXRDY			; BIT SET?
+	JR	Z,PTRIN			; IF NOT WAIT
+	IN	A,(SIO2DAT)		; GET DATA
+	RET				; EXIT	
+;
+	END
+

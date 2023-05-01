@@ -1,0 +1,150 @@
+	Changes to ADS CP/M from version 1.0 to version 1.1
+
+Added drivers for second M.E.U. The new M.E.U. is designated
+as drive N:.
+
+AFORMAT was changed to allow formatting of the second M.E.U.
+
+ACOPYSYS version number was changed from 1.0 to 1.1.
+
+	Changes to ADS CP/M from version 1.1 to version 1.2
+
+Added 64 more directory entries to the M.E.U. directories. The
+disks now hold 496k and allow 128 directory entries.
+
+The boot tracks have been re-organized to allow more room for
+boot-defaults and expansion of the boot message.
+
+Boot message can now be 255 bytes long. The boot logo now takes
+up two 128 byte sectors. This allows for expansion in the boot
+message.
+
+There are now 128 bytes instead of 64 bytes available for boot
+default values. This change requires programs that look for
+the default areas at a specific location on disk to be changed,
+like ASETIO, ASETSIO, AAUTOST.
+
+The BIOS was changed to allow an initial CP/M command to be
+stored and be executed on a cold boot only.
+
+ADS CP/M below version 1.2 cannot be mixed when warm booting or
+the ADS will crash.
+
+ACOPYSYS version was changed from 1.1 to 1.2.
+
+	Changes to ADS CP/M from version 1.2 to version 1.3
+
+The ADS serial printer driver has been changed to also use
+padding characters for printers that don't use XON/XOFF. The
+driver will allow the user to select what padding character to
+use (0-255), and will allow different setting for the following
+characters, BS (08H), TAB (09H), LF (0AH), FF (0CH), CR (0DH).
+
+BIOS has been changed to allow CP/M to load off of disks with
+different sectors per track. The BIOS looks in the DPB for the
+number of sectors per track for the logged in disk now. The
+disks still must have 128 byte sectors.
+
+ACOPYSYS version was changed from 1.2 to 1.3.
+
+	Changes to ADS CP/M from version 1.3 to version 1.4
+
+The keyboard special function key routines were rewritten to be
+more efficient. It is now also easier to expand the translation
+table than it was before.
+
+The CRT screen driver was enhanced to allow insert line and
+delete line ESCape codes. These new functions greatly enhance
+the ADS's performance with programs such as WordStar and Turbo
+Pascal. The new codes are:
+
+	<ESC>L		insert a blank line and move cursor to
+			beginning of current line. All lines
+			below the current line are pushed down
+			by one line.
+
+	<ESC>M		delete current line and move cursor to
+			beginning of current line. All lines
+			below the current line are pulled up by
+			one line to fill in the delete line. A
+			blank line is created at the bottom of
+			the screen.
+
+These codes were chosen to be consistant with other popular
+terminals using control and escapre codes similar to the ADS's.
+Some of these terminals include Heath and Telray series 10.
+Existing software will still run correctly.
+
+ACOPYSYS version was changed from 1.3 to 1.4.
+
+	Changes to ADS CP/M from version 1.4 to version 1.41
+
+Cleaned CRT driver up a bit.
+
+	Changes to ADS CP/M from version 1.41 to version 1.50
+
+Added support for double sided drives, for drives A:, B:, C:,
+and D: (984k useable). Also, created the utility ASETDRV which
+allows selective configurations of SS and DS drives.
+
+Rewrote MEU driver to be faster, and not complement the data
+byte. CP/M v1.50 is not able to read an MEU formatted prior
+to this version of CP/M.
+
+Changes AFORMAT to support formatting of a DSDD 8 inch disk.
+AFORMAT will automatically detect the type of disk that is
+to be formatted.
+
+ACOPY will not copy a DSDD disk correctly, and will be dropped
+from the utilites list.
+
+ACOPYSYS version was changed from 1.4 to 1.5
+
+	Changes to ADS CP/M from version 1.50 to version 1.63
+
+ACOPYSYS version was changed from 1.5 to 1.6
+
+AFORMAT will now format a floppy when run from the hard disk.
+
+The boot logo has been changed.
+
+ADS CP/M now supports the NCP hard disk, as a local hard disk.
+
+ADS CP/M has been changed to 58k CP/M from 59k CP/M. ADS CP/M
+below version 1.63 cannot be mixed when warm booting or the 
+ADS will crash.
+
+	Changes to ADS CP/M from version 1.63 to version 1.70
+
+NCP hard disk directory expanded to hold 896 directory entries.
+
+ACOPYSYS version was changed from 1.6 to 1.7
+
+	Changes to ADS CP/M from version 1.70 to version 1.82
+
+BIOS now allows reassigning of drive id.
+
+BIOS supports combinations of floppy controllers and drives.
+
+ADS DSDD format now hold 192 directory entries instead of 128.
+
+ACOPYSYS version was changed from 1.7 to 1.8
+
+AFORMAT version changed from 1.2 to 1.3
+
+	Changes to ADS CP/M from version 1.82 to version 1.84
+
+Directory size for hard disk changed from 896 directory entries
+downto 768 directory entries.
+
+Drives C: and D: floppy drivers default to DSDD drives.
+
+Removed software controlled retry code. Retries are performed
+automatically by hardware.
+
+	Changes to ADS CP/M from version 1.84 to version 1.85
+
+Added "dummy hard disk" capability so that cp/m can be built
+without a hard disk driver (for non-hard disk systems) so that
+more memory is left over above the bios for other use.
+

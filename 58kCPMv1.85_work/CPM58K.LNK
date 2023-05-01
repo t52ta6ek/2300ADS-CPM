@@ -1,0 +1,110 @@
+DI CR
+DI CR
+DI 'Kontron ADS 58k CP/M Generator',CR
+DI 'Tom de Lellis',CR
+DI '9/30/85',CR
+DI CR
+DI '	A:   - 8 inch floppy unit 1, drive 0 (SSDD)',CR
+DI '	B:   - 8 inch floppy unit 1, drive 1 (SSDD)',CR
+DI '	C:   - 8 inch floppy unit 2, drive 0 (DSDD)',CR
+DI '	D:   - 8 inch floppy unit 2, drive 1 (DSDD)',CR
+DI '	E:   - 8 inch winchester head 0',CR
+DI '	F:   - 8 inch winchester head 1',CR
+DI '	G:   - 8 inch winchester head 2',CR
+DI '	H:   - 8 inch winchester head 3',CR
+DI '	I:   - 8 inch winchester head 4',CR
+DI '	J:   - 8 inch floppy unit 1, drive 0 (DSDD)',CR
+DI '	K:   - 8 inch floppy unit 1, drive 1 (DSDD)',CR
+DI '	M:   - Memory expansion unit 0',CR
+DI '	N:   - Memory expansion unit 1',CR
+DI CR
+DI '	CRT: - ADS console I/O         (CRT and keyboard)',CR
+DI '	LPT: - Parallel printer driver (parallel printer port on MPIO 1)',CR
+DI '	UL1: - Serial printer driver   (SIO 2 on MPIO 1)',CR
+DI '	       using XON/XOFF protocol',CR
+DI '	       and padding characters',CR
+DI '	PTR: - Serial input driver     (SIO 2 on MPIO 1)',CR
+DI '	UR1: - Serial input driver     (SIO 3 on MPIO 2)',CR
+DI '	UR2: - Serial input driver     (SIO 4 on MPIO 2)',CR
+DI '	PTP: - Serial output driver    (SIO 2 on MPIO 1)',CR
+DI '	UP1: - Serial output driver    (SIO 3 on MPIO 2)',CR
+DI '	UP2: - Serial output driver    (SIO 4 on MPIO 2)',CR
+DI '	TTY: - Serial I/O driver with  (SIO 1 on MPIO 1)',CR
+DI '	       hardware handshaking',CR
+DI '	BAT: - Console batch device',CR
+DI '	       input  = RDR:',CR
+DI '	       output = LST:',CR
+DI '	UC1: - Console I/O router',CR
+DI '	       input  = RDR:',CR
+DI '	       output = PUN:',CR
+DI CR
+DI CR
+
+	MSOFT
+
+	LO	0100H
+	OUT	ACOPYSYS.COM
+ 
+% COPYSYS PROGRAM
+	FI	ACOPYSYS.REL
+ 
+% COLD START LOADER
+   	DEF	WRSTRT=1000H
+	LO	1000H
+	AC	0000H
+	FI	ADSBOOT.REL
+ 
+% BOOT MESSAGE
+	LO	1100H
+	AC	0CA80H
+	FI	BOOTMSG.REL
+
+% INITIAL DEFAULTSŠ	LO	1200H
+	AC	0CB80H
+	FI	DEFAULTS.REL
+
+% CP/M CCP
+	DEF	ZCPR=0CC00H
+	LO	1280H
+	AC	0CC00H
+	FI	ZCPR.REL
+ 
+% CP/M BDOS
+	DEF	BDOS=0D400H
+     	LO	1A80H
+	AC	0D400H
+	FI	BDOS.REL
+ 
+% MAIN CBIOS FILE
+	DEF	CBIOS=0E200H
+	LO	2880H
+	AC	0E200H
+	FI	CBIOS.REL
+ 
+% I/O DRIVERS
+	FI	REINIT.REL
+	FI	CRT.REL
+	FI	TTY.REL
+	FI	PTR.REL
+	FI	UR1.REL
+	FI	UR2.REL
+	FI	PTP.REL
+	FI	UP1.RELŠ	FI	UP2.REL
+	FI	LPT.REL
+	FI	UL1.REL
+	FI	FLOPPY.REL
+	FI	MEU.REL
+	FI	HDISK.REL
+ 
+% CRT SCREEN ADDRESS AND SYSTEM STACK
+	DEF	STACK=0F800H
+	DEF	CRTRAM=0F800H
+ 
+% MISC. TABLES
+	AC	0FF80H
+	FI	TABLES.REL
+ 
+% BUILD	LINK MAP
+	MAP	A
+	REPORT
+

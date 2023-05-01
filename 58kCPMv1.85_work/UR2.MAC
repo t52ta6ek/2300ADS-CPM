@@ -1,0 +1,45 @@
+;
+; *****
+; ***** UR2 DRIVER
+; ***** TOM DE LELLIS
+; ***** 11/29/85
+; *****
+;
+	.Z80
+	CSEG
+;
+	PUBLIC	UR2IST
+	PUBLIC	UR2IN
+;
+SIO4DAT	EQU	X'A4'			; SIO4 DATA I/O PORT
+SIO4STA	EQU	X'A5'			; SIO4 STATUS PORT
+;
+RXRDY	EQU	X'02'			; RCRV BUFFER FULL
+;
+TRUE	EQU	X'FF'
+FALSE	EQU	X'00'
+;
+; *****
+; ***** GET INPUT STATUS
+; *****
+;
+UR2IST:
+	IN	A,(SIO4STA)		; GET STATUS
+	AND	RXRDY			; CHECK FOR DATA
+	RET	Z			; RETURN 0 IF NONE
+	CPL				; NOT 0
+	RET				; EXIT
+;
+; *****
+; ***** INPUT DATA
+; *****
+;
+UR2IN:
+	IN	A,(SIO4STA)		; GET STATUS
+	AND	RXRDY			; BIT SET?
+	JR	Z,UR2IN			; IF NOT WAIT
+	IN	A,(SIO4DAT)		; GET DATA
+	RET				; EXIT	
+;
+	END
+

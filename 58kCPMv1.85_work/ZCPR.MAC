@@ -1,0 +1,2024 @@
+	title	'ZCPR Version 1.0'
+;
+;  Cp/m	z80 command processor replacement (cpr)	version	4.0
+;
+;******** structure notes ********
+;
+; 	This cpr is divided into a number of major sections.  the following
+; Is an	outline	of these sections and the names	of the major routines
+; Located therein.
+;
+; Section	function/routines
+; -------	-----------------
+;
+;   --		opening	comments, equates, and macro definitions
+;
+;    0		jmp table into cpr
+;
+;    1		buffers
+;
+;    2		cpr starting modules
+;			Cpr1	cpr	restrt	rstcpr	rcprnl
+;			Prnnf
+;
+;    3		utilities
+;			Crlf	conout	conin	lcout	lstout
+;			Readf	read	bdosb	printc	print
+;     			Getdrv	defdma	dmaset	reset	bdosjp
+;			Login	openf	open	grbdos	close
+;			Searf	sear1	searn	subkil	delete
+;			Resetusr getusr	setusr
+;
+;     4		cpr utilities
+;			Setud	setu0d	ucase	redbuf	cnvbuf
+;			Break	usrnum	error	sdelm	advan
+;			Sblank	addah 	number	numerr	hexnum
+;			Dirptr	slogin	dlogin	comlog	scaner
+;			Cmdser
+;
+;     5		cpr-resident commands and functions
+;     5a		dir	dirpr	fillq
+;     5b		era
+;     5c		list
+;     5d		type	pager
+;     5e		save
+;     5f		ren
+;     5g		user
+;     5h		dfu
+;     5i		jump
+;     5j		go
+;     5k		com	callprog	errlog	errjmp
+;     5l		get	memload	prnle
+
+
+false	equ	0
+true	equ	not  False
+
+
+
+;  Customization equates
+;
+;  The following equates may be	used to	customize this cpr for the user's
+;    System and	integration technique.	the following constants	are provided:
+;
+;    Rel - true	if integration is to be	done via movcpm
+;	 - false if integration	is to be done via ddt and sysgen
+;
+;    Base - base address of user's cp/m	system (normally 0 for dr version)
+;	    This equate	allows easy modification by non-standard cp/m (eg,h89)
+;
+;    Cprloc - base page	address	of cpr;	this value can be obtained by running
+;	      The bdosloc program on your system, or by	setting	the
+;	      Msize and	biosex equates to the system memory size in
+;	      K-bytes and the "extra" memory required by your bios
+;	      In k-bytes. biosex is zero if your bios is normal	size,
+;	      And can be negative if your bios is in prom or in
+;	      Non-contiguous memory.
+;
+;    Ras - remote-access system; setting this equate to	true disables
+;	   Certain cpr commands	that are considered harmful in a remote-
+;	   Access environment; use under remote-access systems (rbbs) for
+;	   Security purposes
+;
+
+
+rel	equ    	false	;Set to	true for movcpm	integration
+
+base	equ	0	;Base of cp/m system (set for standard cp/m)
+
+
+
+
+
+
+	if	rel
+cprloc	equ  	0	;Movcpm	image
+	else
+;
+; If rel is false, the value of	cprloc may be set in one
+; Of two ways.	the first way is to set	msize and biosex
+; As described above using the following three lines:
+
+
+msize	equ	59	;Size of mem in	k-bytes
+biosex	equ	0     	;Extra # k-bytes in bios
+cprloc	equ	3400h+(msize-20-biosex)*1024	;Cpr origin
+
+
+; The second way is to obtain the origin of your current
+; Cpr using bdsloc or its equivalent, then merely set cprloc
+; To that value	as as in the following line:
+;
+;Cprloc	equ	0d000h	;fill in with bdosloc supplied value
+;
+; Note that you	should only use	one method or the other.
+; Do not define	cprloc twice!
+;
+; The following	gives the required offset to load the cpr into the
+; Cp/m sysgen image through ddt	(the roffset command); note that this
+; Value	conforms with the standard value presented in the cp/m reference
+; Manuals, but it may not necessarily conform with the location	of the
+; Cpr in your cp/m system; several systems (morrow designs, p&t, heath
+; Org-0	to name	a few) have the	cpr located at a non-standard address in
+; The sysgen image
+;
+;Cprr	equ	0980h-cprloc	;ddt load offset
+;Cprr	equ	1100h-cprloc	;ddt load offset for morrow designs
+cprr	equ	1280h-cprloc	;Ddt load offset for copysys
+	endif
+;
+ras	equ	false	;Set to	true if	cpr is for a remote-access system
+;
+; If the following is true then zcpr will search drive a in addition to the
+; default drive.
+;
+adrive	equ	false 
+;
+; The following	is presented as	an option, but is not generally	user-customiz-
+; Able.	 a basic design	choice had to be made in the design of zcpr concerning
+; The execution	of submit files.  the original ccp had a problem in this sense
+; In that it always looked for the submit file from drive a: and the submit
+; Program itself (submit.com) would place the $$$.sub file on the currently
+; Logged-in drive, so when the user was	logged into b: and he issued a submit
+; Command, the $$$.sub was placed on b:	and did	not execute because the	ccp
+; Looked for it	on a: and never	found it.
+;	After much debate it was decided to have zcpr perform the same type of
+; Function as ccp (look	for the	$$$.sub	file on	a:), but the problem with
+; Submit.com still exists.  hence, rgf designed	supersub and rlc took his
+; Supersub and designed	sub from it; both programs are set up to allow the
+; Selection at assembly	time of	creating the $$$.sub on	the logged-in drive
+; Or on	drive a:.
+;	A final	definition of the indirect command file	($$$.sub or submit
+; File)	is presented as	follows:
+;		"an indirect command file is one which contains
+;		 A series of commands exactly as they would be
+;		 Entered from a	cp/m console.  the submit command
+;		 (or sub command) reads	this files and transforms
+;		 It for	processing by the zcpr (the $$$.sub file).
+;		 Zcpr will then	execute	the commands indicated
+;		 Exactly as if they were typed at the console."
+;	Hence, to permit this to happen, the $$$.sub file must always
+; Be present on	a specific drive, and a: is the	choice for said	drive.
+; With this facility engaged as	such, indirect command files like:
+;		Dir
+;		A:
+;		Dir
+; Can be executed, even	though the currently logged-in drive is	changed
+; During execution.  if	the $$$.sub file was present on	the currently
+; Logged-in drive, the above series of commands	would not work since the
+; Zcpr would be	looking	for $$$.sub on the logged-in drive, and	switching
+; Logged-in drives without moving the $$$.sub file as well would cause
+; Processing to	abort.
+;
+suba	equ	false	; Set to true to have $$$.sub always on	a:
+			; Set to false to have $$$.sub on the logged-in	drive
+;
+;   The	following flag enables extended	processing for user-program supplied
+; Command lines.  this is for command level 3 of zcpr.	under the ccpz version
+; 4.0 philosophy, three	command	levels exist:
+;	(1) that command issued	by the user from his console at	the '>'	prompt
+;	(2) that command issued	by a $$$.sub file at the '$' prompt
+;	(3) that command issued	by a user program by placing the command into
+; Cibuff and setting the character count in cbuff
+;   Setting clevel3 to true enables extended processing	of the third level of
+; Zcpr command.	 all the user program need do is to store the command line and
+; Set the character count; zcpr	will initialize	the pointers properly, store
+; The ending zero properly, and	capitalize the command line for	processing.
+; Once the command line	is properly stored, the	user executes the command line
+; By reentering	the zcpr through cprloc	[note:	the c register must contain
+; A valid user/disk flag (see location 4) at this time.]
+;
+clevel3	equ	true		;Enable	command	level 3	processing
+;
+
+;CP/NET flag if true will cause zcpr to do a free drive call on entry
+
+
+cpnet	equ	false
+
+
+;
+;*** terminal and 'type' customization equates
+;
+nlines	equ	24		;Number	of lines on crt	screen
+wide	equ	true		;True if wide dir display
+fence	equ	'|'		;Sep char between dir files
+;
+pgdflt	equ	true		;Set to	false to disable paging	by default
+pgdflg	equ  	'P'		;For type command: page	or not (dep on pgdflt)
+				;  This	flag reverses the default effect
+;
+maxusr	equ	15		;Maximum user number accessable
+;
+sysflg	equ	'A'		;For dir command: list $sys and	$dir
+;
+soflg	equ	'S'		;For dir command: list $sys files only
+;
+supres	equ	true		;Supresses user	# report for user 0
+;
+defusr	equ	0		;Default user number for com files
+;
+sprmpt	equ	'$'		;Cpr prompt indicating submit command
+cprmpt	equ	'>'		;Cpr prompt indicating user command
+;
+numbase	equ	'H'	      	;Character used	to switch from default
+				; Number base
+;
+sectflg	equ	'S'		;Option	char for save command to save sectors
+;
+; End of customization section
+;
+cr	equ	0dh
+lf	equ	0ah
+tab	equ	09h
+;
+wboot	equ	base+0000h		;Cp/m warm boot	address
+udflag	equ	base+0004h		;User num in high nybble, disk in low
+bdos	equ	base+0005h		;Bdos function call entry pt
+tfcb	equ	base+005ch		;Default fcb buffer
+tbuff	equ	base+0080h		;Default disk i/o buffer
+tpa	equ	base+0100h		;Base of tpa
+;
+;
+;**** section 0	****
+;
+	.z80
+;
+;  Entry points	into zcpr
+;    If	the zcpr is entered at location	cprloc (at the jmp to cpr), then
+; The default command in cibuff	will be	processed.  if the zcpr	is entered
+; At location cprloc+3 (at the jmp to cpr1), then the default command in
+; Cibuff will not be processed.
+;    Note:  entry into zcpr in this way	is permitted under zcpr	version	4.0,
+; But in order for this	to work, cibuff	and cbuff must be initialized properly
+; And the c register must contain a valid user/disk flag (see location 4: the
+; Most significant nybble contains the user number and the least significant
+; Nybble contains the disk number).
+;    Some user programs	(such as synonym3) attempt to use the default
+; Command facility.  under the original	cpr, it	was necessary to initialize
+; The pointer after the	reserved space for the command buffer to point to
+; The first byte of the	command	buffer.	 under version 4.x of zcpr, this is
+; No longer the	case.  the cibptr (command input buffer	pointer) is located
+; To be	compatable with	such programs (provided	they determine the buffer
+; Length from the byte at mbuff	[cprloc	+ 6]), but under version 4.x of	zcpr
+; This is no longer necessary.	zcpr version 4.x automatically initializes
+; This buffer pointer in all cases.
+;
+entry:
+	jp	cpr	; Process potential default command
+	jp	cpr1	; Do not process potential default command
+;
+;**** section 1	****
+; Buffers et al
+;
+; Input	command	line and default command
+;   The	command	line to	be executed is stored here.  this command line
+; Is generated in one of three ways:
+;	(1) by the user	entering it through the	bdos readln function at
+; The du> prompt [user input from keyboard]
+;	(2) by the submit file facility	placing	it there from a	$$$.sub
+; File
+;	(3) by an external program or user placing the required	command
+; Into this buffer
+;   In all cases, the command line is placed into the buffer starting at
+; Cibuff.  this	command	line is	terminated by the last character (not carriage
+; Return), and a character count of all	characters in the command line
+; Up to	and including the last character is placed into	location cbuff
+; (immediately before the command line at cibuff).  the	placed command line
+; Is then parsed, interpreted, and the indicated command is executed.
+; If clevel3 is	permitted, a terminating zero is placed	after the command
+; (otherwise the user program has to place this	zero) and the cibptr is
+; Properly initialized (otherwise the user program has to init this ptr).
+; If the command is placed by a	user program, entering at cprloc is enough
+; To have the command processed.  again, under ccpz version 4.0, it is not
+; Necessary to store the pointer to cibuff in cibptr; zcpr will	do this	for
+; The calling program if clevel3 is made true.
+;   Warning:  the command line must not	exceed buflen characters in length.
+; For user programs which load this command, the value of buflen can be
+; Obtained by examining	the byte at mbuff (cprloc + 6).
+;
+buflen	equ	80		;Maximum buffer	length
+mbuff:
+	db	buflen		;Maximum buffer	length
+cbuff:
+	db	0		;Number	of valid chars in command line
+cibuff:
+	db	'		'	;Default (cold boot) command
+cibuf:
+	db	0			;Command string	terminator
+	ds	buflen-($-cibuff)+1	;Total is 'buflen' bytes
+;
+cibptr:
+	dw	cibuff		;Pointer to command input buffer
+ciptr:
+	dw	cibuf		;Current pointer
+;
+	ds	26		;Stack area
+stack	equ	$	       	;Top of	stack
+;
+; File type for	command
+;
+commsg:
+	db	'COM'
+;
+; Submit file control block
+;
+subfcb:
+	if	suba		;If $$$.sub on a:
+	db	1		;Disk name set to default to drive a:
+	endif
+;
+	if	not suba	;if $$$.sub on current drive
+	db	0		;Disk name set to default to current drive
+	endif
+;
+	db	'$$$'		;File name
+	db	'     '
+	db	'SUB'		;File type
+	db	0		;Extent	number
+	db	0		;S1
+subfs2:
+	ds	1		;S2
+subfrc:
+	ds	1		;Record	count
+	ds	16		;Disk group map
+subfcr:
+	ds	1		;Current record	number
+subadd:
+	dw	0000h		;random address
+	db	0
+;
+; Command file control block
+;
+fcbdn:
+	ds	1		;Disk name
+fcbfn:
+	ds	8		;File name
+fcbft:
+	ds	3		;File type
+	ds	1     		;Extent	number
+	ds	2		;S1 and	s2
+	ds	1		;Record	count
+fcbdm:
+	ds	16		;Disk group map
+fcbcr:
+	ds	1		;Current record	number
+;
+; Other	buffers
+;
+pagcnt:
+	db	nlines-2	;Lines left on page
+chrcnt:
+	db	0		;Char count for	type
+qmcnt:
+	db	0	       	;Question mark count for fcb token scanner
+;
+; Cpr built-in command table
+;
+nchars	equ	4		;Number	of chars/command
+;
+; Cpr command name table
+;   Each table entry is	composed of the	4-byte command and 2-byte address
+;
+cmdtbl:
+	db	'DIR '
+       	dw	dir
+	db	'LIST'
+	dw	list
+	db	'TYPE'
+	dw	type
+	db	'USER'
+	dw	user
+	db	'DFU '
+	dw	dfu
+;
+	if	not Ras		;for non-remote	access system
+	db	'X   '		;Re-execute program in tpa
+	dw	x
+	db	'ERA '
+	dw	era
+	db	'SAVE'
+	dw	save
+	db	'REN '
+	dw	ren
+;  	db	'GET '
+;	dw	get
+;	db	'JUMP'
+;	dw	jump
+	endif
+;
+ncmnds	equ	($-cmdtbl)/(nchars+2)
+	page
+;**** section 2	****
+; Cpr starting points
+;
+; Start	cpr and	don't process default command stored
+;
+cpr1:
+	xor	a		;Set no	default	command
+	ld	(cbuff),a
+;
+; Start	cpr and	possibly process default command
+;
+; Note on modification by rgf: bdos returns 0ffh in
+; Accumulator whenever it logs in a directory, if any
+; File name contains a '$' in it.  this	is now used as
+; A clue to determine whether or not to	do a search
+; For submit file, in order to eliminate wasteful searches.
+;
+cpr:
+	ld	sp,stack	;Reset stack
+	push	bc
+     	ld	a,c		;C=user/disk number (see loc 4)
+	rra			;Extract  user number
+	rra
+	rra
+	rra
+	and	0fh
+	ld	e,a		;Set user number
+ 	call	setusr
+	call	reset		;Reset disk system
+;	ld	(rngsub),a	;Save submit clue from drive a:
+	pop	bc
+	ld	a,c		;C=user/disk number (see loc 4)
+	and	0fh		;Extract default disk drive
+	ld	(tdrive),a	;Set it
+;	jr	z,nolog		;Skip if 0...already logged
+     	call	login		;Log in	default	disk
+;
+;	if	not  Suba	 ;if $$$.sub is	on current drive
+;	ld	(rngsub),a	;Bdos '$' clue
+;	endif
+;
+nolog:
+	if	cpnet
+
+	;free drives
+	
+	ld	de,0ffffh
+	ld	c,27h
+	call	grbdos
+	
+	endif
+	
+	ld	de,subfcb	;Check for $$$.sub on current disk
+rngsub	equ	$+1		;Pointer for in-the-code modification
+	ld	a,0ffh       	;2nd byte (immediate arg) is the rngsub	flag
+	or	a		;Set flags on clue
+	cpl			;Prepare  for coming 'cma'
+	call	nz,sear1
+   	cpl			;0ffh  is returned if no $$$.sub, so complement
+	ld	(rngsub),a	;Set flag (0=no	$$$.sub)
+	ld	a,(cbuff)	;Execute default command?
+	or	a		;0=no
+	jr	nz,rs1
+;
+; Prompt user and input	command	line from him
+;
+restrt:
+	ld	sp,stack	;Reset stack
+;
+; Print	prompt (du>)
+;
+	call	crlf		;Print prompt
+	call	getdrv		;Current drive is part of prompt
+	add	a,'A'		;Convert to ascii a-p
+	call	conout
+	call	getusr		;Get user number
+;
+	if	supres		;If suppressing	usr # report for usr 0
+	or	a
+	jr	z,rs000
+	endif
+;
+	cp	10		;User <	10?
+	jr	c,rs00
+	sub	10		;Subtract 10 from it
+	push	af		;Save it
+	ld	a,'1'		;Output	10's digit
+  	call	conout
+	pop	af
+rs00:
+	add	a,'0'		;Output	1's digit (convert to ascii)
+	call	conout
+;
+; Read input line from user or $$$.sub
+;
+rs000:
+	call	redbuf		;Input command line from user (or $$$.sub)
+;
+; Process input	line
+;
+rs1:
+;
+	if	clevel3	 	;If third command level	is permitted
+	call	cnvbuf		;Capitalize command line, place	ending 0,
+				; And set cibptr value
+    	endif
+;
+	call	defdma		;Set tbuff to dma address
+	call	getdrv		;Get default drive number
+	ld	(tdrive),a	;Set it
+	call	scaner		;Parse command name from command line
+	call	nz,error	;Error if command name contains	a '?'
+	ld	de,rstcpr	;Put return address of command
+	push	de		;On the	stack
+	ld	a,(tempdr)	;Is command of form 'd:command'?
+	or	a		;Nz=yes
+	jp	nz,com		; Immediately
+	call	cmdser		;Scan for cpr-resident command
+	jp	nz,com		;Not cpr-resident
+	ld	a,(hl)		;Found it:  get	low-order part
+    	inc	hl		;Get high-order	part
+	ld	h,(hl)		;Store high
+	ld	l,a		;Store low
+	jp	(hl)		;Execute  cpr routine
+;
+; Entry	point for restarting cpr and logging in	default	drive
+;
+rstcpr:
+	call	dlogin		;Log in	default	drive
+;
+; Entry	point for restarting cpr without logging in default drive
+;
+rcprnl:
+	call	scaner		;Extract next token from command line
+	ld	a,(fcbfn)	;Get first char	of token
+	sub	' '		;Any char?
+	ld	hl,tempdr
+	or	(hl)
+	jp	nz,error
+	jr	restrt
+;
+; No file error	message
+;
+prnnf:
+	call	printc		;No file message
+	db	'No Fil','e'+80h
+	ret
+	page
+;
+;**** section 3	****
+; I/o utilities
+;
+; Output char in reg a to console and don't change bc
+;
+;
+; Output <crlf>
+;
+crlf:
+	ld	a,cr
+	call	conout
+	ld	a,lf	;Fall thru to conout
+;
+conout:
+	push	bc
+	ld	c,02h
+output:
+	and	07fh	   ;Assure parity bit off		 ;bc
+	ld	e,a
+	push	hl
+	call	bdos
+	pop	hl
+    	pop	bc
+	ret
+;
+conin:
+	ld	c,01h	;Get char from con: with echo
+	call	bdosb
+	jp	ucase	;Capitalize
+;
+lcout:
+	push	af	;Output	char to	con: or	lst: dep on prflg
+prflg	equ	$+1	;Pointer for in-the-code modification
+	ld	a,0	;2nd byte (immediate arg) is the print flag
+	or	a	;0=type
+	jr	z,lc1
+	pop	af	;Get char
+;
+; Output char in reg a to list device
+;
+lstout:
+	push	bc
+   	ld	c,05h
+	jr	output
+lc1:
+	pop	af	;Get char
+	push	af
+	call	conout	;Output	to con:
+	pop	af
+	cp	lf	;Check for paging
+     	jp	z,pager
+	ret
+;
+readf:
+	ld	de,fcbdn  ;Fall	thru to	read
+read:
+	ld	c,14h	;Fall thru to bdosb
+;
+; Call bdos and	save bc
+;
+bdosb:
+	push	bc
+	call	bdos
+	pop	bc
+	or	a
+	ret
+;
+; Print	string (ending in 0) pted to by	ret adr;start with <crlf>
+;
+printc:
+	push	af		;Save flags
+	call	crlf		;New line
+	pop	af
+;
+print:
+	ex	(sp),hl		;Get  ptr to string
+	push	af		;Save flags
+	call	prin1		;Print string
+	pop	af		;Get flags
+	ex	(sp),hl		;Restore  hl and ret adr
+	ret
+;
+; Print	string (ending in 0) pted to by	hl
+;
+prin1:
+	ld	a,(hl)		;Get next byte
+	call	conout		;Print char
+	ld	a,(hl)		;Get next byte again for test
+	inc	hl		;Pt to next byte
+	or	a		;Set flags
+	ret	z		;Done if zero
+	ret	m		;Done if msb set
+	jr	prin1
+;
+; Bdos function	routines
+;
+;
+; Return number	of current disk	in a
+;
+getdrv:
+	ld	c,19h
+	jr	bdosjp
+;
+; Set 80h as dma address
+;
+defdma:
+	ld	de,tbuff	;80h=tbuff
+dmaset:
+	ld	c,1ah
+	jr	bdosjp
+;
+reset:
+	ld	c,0dh
+bdosjp:
+	jp	bdos
+;
+login:
+	ld	e,a
+	ld	c,0eh
+	jr	bdosjp	;Save some code	space
+;
+openf:
+	xor	a
+	ld	(fcbcr),a
+	ld	de,fcbdn  ;Fall	thru to	open
+;
+open:
+	ld	c,0fh	;Fall thru to grbdos
+;
+grbdos:
+	call	bdos
+	inc	a	;Set zero flag for error return
+	ret
+;
+close:
+	ld	c,10h
+	jr	grbdos
+;
+searf:
+	ld	de,fcbdn  ;Specify fcb
+sear1:
+	ld	c,11h
+	jr	grbdos
+;
+searn:
+	ld	c,12h
+	jr	grbdos
+;
+; Check	for submit file	in execution and abort it if so
+;
+subkil:
+	ld	hl,rngsub	;Check for submit file in execution
+	ld	a,(hl)
+	or	a		;0=no
+	ret	z
+ 	ld	(hl),0		;Abort submit file
+	ld	de,subfcb	;Delete	$$$.sub
+;
+delete:
+	ld	c,13h
+	jr	bdosjp	;Save more space
+;
+; Reset	user number if changed
+;
+resetusr:
+tmpusr	equ	$+1		;Pointer for in-the-code modification
+	ld	a,0		;2nd byte (immediate arg) is tmpusr
+	ld	e,a		;Place in e
+	jr	setusr		;Then go set user
+getusr:
+	ld	e,0ffh		;Get current user number
+setusr:
+	ld	c,20h 		;Set user number to value in e (get if e=ffh)
+	jr	bdosjp		;More space saving
+;
+; End of bdos functions
+;
+	page
+;
+;**** section 4	****
+; Cpr utilities
+;
+; Set user/disk	flag to	current	user and default disk
+;
+setud:
+	call	getusr		;Get number of current user
+	add	a,a		;Place it in high nybble
+	add	a,a
+	add	a,a
+	add	a,a
+	ld	hl,tdrive	;Mask in default drive number (low nybble)
+	or	(hl)		;Mask in
+	ld	(udflag),a	;Set user/disk number
+	ret
+;
+; Set user/disk	flag to	user 0 and default disk
+;
+setu0d:
+;	ld	a,(udflag)
+;	and	0f0h
+tdrive	equ	$+1		;Pointer for in-the-code modification
+	ld	a,0
+;	or	0		;2nd byte (immediate arg) is tdrive
+	
+	ld	(udflag),a	;Set user/disk number
+	ret
+;
+; Convert char in a to upper case
+;
+ucase:
+	cp	61h		;Lower-case a
+	ret	c
+	cp	7bh		;Greater than lower-case z?
+	ret	nc
+	and	5fh		;Capitalize
+	ret
+;
+; Input	next command to	cpr
+;	This routine determines	if a submit file is being processed
+; And extracts the command line	from it	if so or from the user's console
+;
+redbuf:
+	ld	a,(rngsub)  	;Submit	file currently in execution?
+	or	a		;0=no
+	jr	z,rb1		;Get line from console if not
+	ld	de,subfcb	;Open $$$.sub
+    	push	de		;Save de
+	call	open
+	pop	de		;Restore de
+	jr	z,rb1
+	ld	c,23h		;get size
+	call	grbdos
+readlop:
+	ld	de,(subadd)
+	dec	de
+	ld	(subadd),de
+	ld	de,subfcb
+	ld	c,21h		;read random
+	call	bdosb
+	jr	nz,rb1		;Erase $$$.sub if end of file and get cmnd
+	ld	a,(tbuff)
+	inc	a
+	jr	z,readlop
+	ld	de,cbuff	;Copy last record (next	submit cmnd) to	cbuff
+	ld	hl,tbuff	;  From	tbuff
+	ld	bc,buflen	;Number	of bytes
+	ldir
+	ld	a,0ffh
+	ld	(tbuff),a
+	ld	de,subfcb
+	ld	c,22h
+	call	bdosb
+	jr	nz,rb1
+	ld	de,subfcb	;Close $$$.sub
+	call	close
+	jr	z,rb1		;Abort $$$.sub if error
+	ld	a,sprmpt	;Print submit prompt
+	call	conout
+	ld	hl,cibuff	;Print command line from $$$.sub
+	call	prin1
+	call	break		;Check for abort (any char)
+;
+	if	clevel3		;If third command level	is permitted
+	ret	z		;If  <null> (no	abort),	return to caller and run
+	endif
+;
+	if	not Clevel3	;if third command level	is not permitted
+	jr	z,cnvbuf	;If <null> (no abort), capitalize command
+	endif
+;
+	call	subkil		;Kill $$$.sub if abort
+	jp	restrt	      	;Restart cpr
+;
+; Input	command	line from user console
+;
+rb1:
+	call	subkil		;Erase $$$.sub if present
+	call	setud		;Set user and disk
+	ld	a,cprmpt	;Print prompt
+	call	conout
+	ld	c,0ah		;Read command line from	user
+	ld	de,mbuff
+	call	bdos
+;
+   	if	clevel3		;If third command level	is permitted
+	jp	setu0d		;Set current disk number in lower params
+	endif
+;
+	if	not  Clevel3	 ;if third command level is not	permitted
+	call	setu0d		;Set current disk number if lower params
+				; And fall thru	to cnvbuf
+	endif
+;
+; Capitalize string (ending in 0) in cbuff and set ptr for parsing
+;
+cnvbuf:
+	ld	hl,cbuff	;Pt to user's command
+	ld	b,(hl)		;Char count in b
+	inc	b		;Add 1 in case of zero
+cb1:
+	inc	hl		;Pt to 1st valid char
+	ld	a,(hl)		;Capitalize command char
+	call	ucase
+	ld	(hl),a
+	djnz	cb1		;Continue to end of command line
+cb2:
+	ld	(hl),0		;Store ending <null>
+  	ld	hl,cibuff	;Set command line ptr to 1st char
+	ld	(cibptr),hl
+	ret
+;
+; Check	for any	char from user console;ret w/zero set if none
+;
+break:
+	push	de		;Save de
+	ld	c,11		;Csts check
+	call	bdosb
+	call	nz,conin	;Get input char
+brkbk:
+	pop	de
+  	ret
+;
+; Get the requested user number	from the command line and validate it.
+;
+usrnum:
+	call	number
+	cp	maxusr+1
+       	ret	c
+;
+; Invalid command -- print it
+;
+error:
+	call	crlf		;New line
+	ld	hl,(ciptr)	;Pt to beginning of command line
+err2:
+	ld	a,(hl)		;Get char
+	cp	' '+1		;Simple	'?' if <sp> or less
+	jr	c,err1
+	push	hl		;Save ptr to error command char
+      	call	conout		;Print command char
+	pop	hl		;Get ptr
+	inc	hl		;Pt to next
+	jr	err2		;Continue
+err1:
+	call	print		;Print '?'
+	db	'?'+80h
+	call	subkil		;Terminate active $$$.sub if any
+	jp	restrt		;Restart cpr
+;
+; Check	to see if de pts to delimiter; if so, ret w/zero flag set
+;
+sdelm:
+	ld	a,(de)
+	or	a		;0=delimiter
+	ret	z
+	cp	' '		;Sdelm1	if < <sp>
+	jr	c,sdelm1
+    	ret	z		;<sp>=delimiter
+	cp	'='		;'='=delimiter
+	ret	z
+	cp	5fh		;Underscore=delimiter
+	ret	z
+	cp	'.'		;'.'=delimiter
+     	ret	z
+	cp	'!'		;'!'=delimiter like CP/M plus and DO
+	ret	z
+	cp	':'		;':'=delimiter
+	ret	z
+	cp	';'		;';'=delimiter
+       	ret	z
+	cp	'<'		;'<'=delimiter
+	ret	z
+	cp	'>'		;'>'=delimiter
+	ret
+ 
+sdelm1:	cp	a		;Set z flag for	caller
+	ret
+;
+; Advance input	ptr to first non-blank and fall	through	to sblank
+;
+advan:
+	ld	de,(cibptr)
+;
+; Skip string pted to by de (string ends in 0) until end of string
+;   Or non-blank encountered (beginning	of token)
+;
+sblank:
+	ld	a,(de)
+	or	a
+	ret	z
+      	cp	' '
+	ret	nz
+	inc	de
+	jr	sblank
+;
+; Add a	to hl (hl=hl+a)
+;
+addah:
+	add	a,l
+	ld	l,a
+	ret	nc
+	inc	h
+	ret
+;
+; Extract decimal number from command line
+;   Return with	value in reg a;all registers may be affected
+;
+number:
+	call	scaner	  	;Parse number and place	in fcbfn
+	ld	hl,fcbfn+10	;Pt to end of token for	conversion
+	ld	b,11		;11 chars max
+;
+; Check	for suffix for hexadecimal number
+;
+nums:
+	ld	a,(hl)		;Get chars from	end, searching for suffix
+	dec	hl		;Back up
+	cp	' '	      	;Space?
+	jr	nz,nums1	;Check for suffix
+	djnz	nums		;Count down
+	jr	num0		;By default, process
+nums1:
+	cp	numbase		;Check against base switch flag
+	jr	z,hnum0
+;
+; Process decimal number
+;
+num0:
+	ld	hl,fcbfn	;Pt to beginning of token
+	ld	bc,1100h	;C=accumulated value, b=char count
+				; (c=0,	b=11)
+num1:
+	ld	a,(hl)		;Get char
+	cp	' '		;Done if <sp>
+	jr	z,num2
+     	inc	hl		;Pt to next char
+	sub	'0'		;Convert to binary (ascii 0-9 to binary)
+	cp	10		;Error if >= 10
+	jr	nc,numerr
+	ld	d,a  		;Digit in d
+	ld	a,c		;New value = old value * 10
+	rlca
+	rlca
+	rlca
+	add	a,c		;Check for range error
+	jr	c,numerr
+      	add	a,c		;Check for range error
+	jr	c,numerr
+	add	a,d		;New value = old value * 10 + digit
+	jr	c,numerr	;Check for range error
+	ld	c,a		;Set new value
+	djnz	num1		;Count down
+;
+; Return from number
+;
+num2:
+	ld	a,c		;Get accumulated value
+      	ret
+;
+; Number error routine for space conservation
+;
+numerr:
+	jp	error		;Use error routine - this is relative pt
+;
+; Extract hexadecimal number from command line
+;   Return with	value in reg a;	all registers may be affected
+;
+hexnum:
+	call	scaner		;Parse number and place	in fcbfn
+hnum0:
+	ld	hl,fcbfn	;Pt to token for conversion
+	ld	de,0		;De=accumulated	value
+      	ld	b,11		;B=char	count
+hnum1:
+	ld	a,(hl)		;Get char
+	cp	' '		;Done?
+	jr	z,hnum3		  ;Return if so
+	cp	numbase		;Done if numbase suffix
+	jr	z,hnum3
+	sub	'0'		;Convert to binary
+	jr	c,numerr	;Return	and done if error
+	cp	10		;0-9?
+	jr	c,hnum2
+    	sub	7		;A-f?
+	cp	10h		;Error?
+	jr	nc,numerr
+hnum2:
+	inc	hl		;Pt to next char
+	ld	c,a		;Digit in c
+	ld	a,d		;Get accumulated value
+	rlca			;Exchange  nybbles
+	rlca
+	rlca
+	rlca
+	and	0f0h		;Mask out low nybble
+	ld	d,a
+	ld	a,e		;Switch	low-order nybbles
+	rlca
+	rlca
+	rlca
+	rlca
+	ld	e,a		;High nybble of	e=new high of e,
+				;  Low nybble of e=new low of d
+	and	0fh   		;Get new low of	d
+	or	d		;Mask in high of d
+	ld	d,a		;New high byte in d
+	ld	a,e
+	and	0f0h		;Mask out low of e
+	or	c     		;Mask in new low
+	ld	e,a		;New low byte in e
+	djnz	hnum1		;Count down
+;
+; Return from hexnum
+;
+hnum3:
+	ex	de,hl	       	;Returned  value in hl
+	ld	a,l		;Low-order byte	in a
+	ret
+;
+; Pt to	directory entry	in tbuff whose offset is specified by a	and c
+;
+dirptr:
+	ld	hl,tbuff	;Pt to temp buffer
+	add	a,c		;Pt to 1st byte	of dir entry
+	call	addah		;Pt to desired byte in dir entry
+	ld	a,(hl)		;Get desired byte
+	ret
+;
+; Check	for specified drive and	log it in if not default
+;
+slogin:
+      	xor	a		;Set fcbdn for default drive
+	ld	(fcbdn),a
+	call	comlog		;Check drive
+	ret	z
+	jr	dlog5		;Do login otherwise
+;
+; Check	for specified drive and	log in default drive if	specified<>default
+;
+dlogin:
+	call	comlog		;Check drive
+	ret	z		;Abort	if same
+	ld	a,(tdrive)	;Log in	default	drive
+;
+dlog5:	jp	login
+;
+; Routine common to both login routines; on exit, z set	means abort
+;
+comlog:
+tempdr	equ	$+1		;Pointer for in-the-code modification
+	ld	a,0		;2nd byte (immediate arg) is tempdr
+     	or	a		;0=no
+	ret	z
+	dec	a		;Compare it against default
+	ld	hl,tdrive
+	cp	(hl)
+	ret			;Abort	if same
+;
+; Extract token	from command line and place it into fcbdn;
+;   Format fcbdn fcb if	token resembles	file name and type (filename.typ);
+;   On input, cibptr pts to char at which to start scan;
+;   On output, cibptr pts to char at which to continue and zero	flag is	reset
+;     If '?' is	in token
+;
+; Entry	points:
+;	Scaner - load token into first fcb
+;	Scanx -	load token into	fcb pted to by hl
+;
+scaner:
+	ld	hl,fcbdn	;Point to fcbdn
+scanx:
+	xor	a		;Set temporary drive number to default
+	ld	(tempdr),a
+	call	advan	  	;Skip to non-blank or end of line
+	ld	(ciptr),de	;Set ptr to non-blank or end of	line
+	ld	a,(de)		;End of	line?
+	or	a	      	;0=yes
+	jr	z,scan2
+	sbc	a,'A'-1		;Convert possible drive	spec to	number
+	ld	b,a		;Store number (a:=0, b:=1, etc)	in b
+     	inc	de		;Pt to next char
+	ld	a,(de)		;See if	it is a	colon (:)
+	cp	':'
+	jr	z,scan3		  ;Yes,	we have	a drive	spec
+	dec	de   		;No, back up ptr to first non-blank char
+scan2:
+	ld	a,(tdrive)	;Set 1st byte of fcbdn as default drive
+	ld	(hl),a
+	jr     	scan4
+scan3:
+	ld	a,b		;We have a drive spec
+	ld	(tempdr),a	;Set temporary drive
+	ld	(hl),b		;Set 1st byte of fcbdn as specified drive
+	inc	de		;Pt to byte after ':'
+;
+; Extract filename from	possible filename.typ
+;
+scan4:
+	xor	a		;A=0
+	ld	(qmcnt),a	;Init count of number of question marks	in fcb
+	ld	b,8		;Max of	8 chars	in file	name
+	call	scanf		;Fill fcb file name
+;
+; Extract file type from possible filename.typ
+;
+	ld	b,3		;Prepare to extract type
+	cp	'.'		;If (de) delimiter is a	'.', we	have a type
+	jr	nz,scan15		;Fill file type	bytes with <sp>
+	inc	de		;Pt to char in command line after '.'
+	call	scanf		;Fill fcb file type
+	jr	scan16		;Skip to next processing
+scan15:
+	call	scanf4		;Space fill
+;
+; Fill in ex, s1, s2, and rc with zeroes
+;
+scan16:
+	ld	b,4		;4 bytes
+scan17:
+	inc	hl		;Pt to next byte in fcbdn
+	ld	(hl),0
+	djnz	scan17
+;
+; Scan complete	-- de pts to delimiter byte after token
+;
+	ld	(cibptr),de
+;
+; Set zero flag	to indicate presence of	'?' in filename.typ
+;
+  	ld	a,(qmcnt)	;Get number of question	marks
+	or	a		;Set zero flag to indicate any '?'
+	ret
+;
+;  Scanf -- scan token pted to by de for a max of b bytes; place it into
+;    File name field pted to by	hl; expand and interpret wild cards of
+;    '*' and '?'; on exit, de pts to terminating delimiter
+;
+scanf:
+	call	sdelm		;Done if delimiter encountered - <sp> fill
+	jr	z,scanf4
+	inc	hl		;Pt to next byte in fcbdn
+	cp	'*'		;Is (de) a wild	card?
+	jr	nz,scanf1	;Continue if not
+	ld	(hl),'?'	;Place '?' in fcbdn and	don't advance de if so
+	call	scq		;Scanner count question	marks
+	jr	scanf2
+scanf1:
+	ld	(hl),a		;Store filename	char in	fcbdn
+	inc	de		;Pt to next char in command line
+	cp	'?'		;Check for question mark (wild)
+	call	z,scq		;Scanner count question	marks
+scanf2:
+	djnz	scanf		;Decrement char	count until 8 elapsed
+scanf3:
+	call	sdelm		;8 chars or more - skip	until delimiter
+	ret	z		;Zero  flag set	if delimiter found
+	inc	de		;Pt to next char in command line
+	jr	scanf3
+;
+;  Fill	memory pointed to by hl	with spaces for	b bytes
+;
+scanf4:
+	inc	hl		;Pt to next byte in fcbdn
+	ld	(hl),' '	;Fill filename part with <sp>
+	djnz	scanf4
+	ret
+;
+;  Increment question mark count for scanner
+;    This routine increments the count of the number of	question marks in
+;    The current fcb entry
+;
+scq:
+	ld	a,(qmcnt)	;Get count
+	inc	a		;Increment
+	ld	(qmcnt),a	;Put count
+	ret
+;
+; Cmdtbl (command table) scanner
+;   On return, hl pts to address of command if cpr-resident
+;   On return, zero flag set means cpr-resident	command
+;
+cmdser:
+	ld	hl,cmdtbl	;Pt to command table
+	ld	c,ncmnds	;Set command counter
+cms1:
+    	ld	de,fcbfn	;Pt to stored command name
+	ld	b,nchars	;Number	of chars/command (8 max)
+cms2:
+	ld	a,(de)		;Compare against table entry
+	cp	(hl)
+	jr	nz,cms3		;No match
+	inc	de		;Pt to next char
+	inc	hl
+	djnz	cms2		;Count down
+	ld	a,(de)		;Next char in input command must be <sp>
+	cp	' '
+	jr	nz,cms4
+	ret			;Command  is cpr-resident (zero	flag set)
+cms3:
+	inc	hl		;Skip to next command table entry
+	djnz	cms3
+cms4:
+	inc	hl		;Skip address
+	inc	hl
+	dec	c		;Decrement table entry number
+	jr	nz,cms1
+	inc	c		;Clear zero flag
+	ret			;Command  is disk-resident (zero flag clear)
+;
+;**** section 5	****
+; Cpr-resident commands
+;
+	page
+;
+;Section 5a
+;Command: dir
+;Function:  to display a directory of the files	on disk
+;Forms:
+;	Dir <afn>	displays the dir files
+;	Dir <afn> s	displays the sys files
+;	Dir <afn> a	display	both dir and sys files
+;
+dir:
+	ld	a,80h			;Set system bit	examination
+	push	af
+	call	scaner			;Extract possible d:filename.typ token
+	call	slogin			;Log in	drive if necessary
+	ld	hl,fcbfn		;Make fcb wild (all '?') if no filename.
+	ld	a,(hl)			;Get first char	of filename.typ
+	cp	' '			;If <sp>, all wild
+	call	z,fillq
+	call	advan			;Look at next input char
+	ld	b,0			;Sys token default
+	jr	z,dir2			  ;Jump; there isn't one
+	cp	sysflg			;System	flag specifier?
+	jr	z,gotsys		;Got system specifier
+	cp	soflg			;Sys only?
+	jr	nz,dir2
+	ld	b,80h	    		;Flag sys only
+gotsys:
+	inc	de
+	ld	(cibptr),de
+	cp	soflg			;Sys only spec?
+	jr	z,dir2			;Then leave bit	spec unchagned
+ 	pop	af			;Get flag
+	xor	a			;Set no	system bit examination
+	push	af
+dir2:
+	pop	af			;Get flag
+dir2a:
+					;Drop into dirpr to print directory
+					; Then restart cpr
+;
+; Directory print routine; on entry, msb of a is 1 (80h) if system files excl
+;
+dirpr:
+	ld	d,a			;Store system flag in d
+	ld	e,0			;Set column counter to zero
+	push	de			;Save column counter (e) and system flag
+	ld	a,b			;Sys only specifier
+	ld	(systst),a
+	call	searf			;Search	for specified file (first occurr
+	call	z,prnnf			;Print no file msg;reg a not changed
+;
+; Entry	selection loop;	on entry, a=offset from	searf or searn
+;
+dir3:
+	jr	z,dir11			;Done if zero flag set
+	dec	a			;Adjust	to returned value
+	rrca				;Convert  number to offset into	tbuff
+	rrca
+	rrca
+   	and	60h
+	ld	c,a			;Offset	into tbuff in c	(c=offset to ent
+	ld	a,10			;Add 10	to pt to system	file attribute b
+	call	dirptr
+	pop	de			;Get system bit	mask from d
+	push	de
+	and	d			;Mask for system bit
+systst	equ	$+1			;Pointer to in-the-code	buffer systst
+	cp	0
+	jr	nz,dir10
+	pop	de			;Get entry count (=<cr>	counter)
+	ld	a,e			;Add 1 to it
+	inc	e
+	push	de			;Save it
+ 	and	03h			;Output	<crlf> if 4 entries printed in l
+	push	af
+	jr	nz,dir4
+	call	crlf			;New line
+	jr	dir5
+dir4:
+	call	print
+;
+	if	wide
+	db	'  '			;2 spaces
+	db	fence			;Then fence char
+	db	' ',' '+80h		;Then 2	more spaces
+	endif
+;
+	if	not wide
+	db	' '			;Space
+	db	fence			;Then fence char
+	db	' '+80h			;Then space
+	endif
+;
+dir5:
+	ld	b,01h			;Pt to 1st byte	of file	name
+dir6:
+	ld	a,b			;A=offset
+	call	dirptr			;Hl now	pts to 1st byte	of file	name
+	and	7fh			;Mask out msb
+	cp	' '	    		;No file name?
+	jr	nz,dir8			;Print file name if present
+	pop	af
+	push	af
+	cp	03h
+	jr	nz,dir7
+	ld	a,09h		;Pt to 1st byte	of file	type
+	call	dirptr			;Hl now	pts to 1st byte	of file	type
+	and	7fh			;Mask out msb
+	cp	' '			;No file type?
+	jr     	z,dir9			;Continue if so
+dir7:
+	ld	a,' '			;Output	<sp>
+dir8:
+	call	conout			;Print char
+	inc	b			;Incr char count
+      	ld	a,b
+	cp	12			;End of	filename.typ?
+	jr	nc,dir9			;Continue if so
+	cp	09h			;End if	filename only?
+	jr	nz,dir6			;Print typ if so
+	ld	a,'.'			;Print dot between file	name and type
+	call	conout
+	jr	dir6
+dir9:
+	pop	af
+dir10:
+	call	break	       		;Check for abort
+	jr	nz,dir11
+	call	searn			;Search	for next file
+	jr	dir3			;Continue
+dir11:
+	pop	de			;Restore stack
+ 	ret
+;
+; Fill fcb @hl with '?'
+;
+fillq:
+	ld	b,11			;Number	of chars in fn & ft
+fqlp:
+	ld	(hl),'?'		;Store '?'
+	inc	hl
+ 	djnz	fqlp
+	ret
+	page
+;
+;Section 5b
+;Command: era
+;Function:  erase files
+;Forms:
+;	Era <afn>	erase specified	files and print	their names
+;
+	if	not ras			;not for remote-access system
+;
+era:
+	call	scaner			;Parse file specification
+	cp	11    			;All wild (all files = 11 '?')?
+	jr	nz,era1			;If not, then do erases
+	call	printc
+	db	'All?',' '+80h					;Bc
+	call	conin			;Get reply
+	cp	'Y'			;Yes?
+	jp	nz,restrt		;Restart cpr if	not
+	call	crlf			;New line
+era1:
+	call	slogin			;Log in	selected disk if any
+	xor	a			;Print all files (examine system bit)
+	ld	b,a			;No sys-only opt to dirpr
+	call	dirpr			;Print directory of erased files
+	ld	de,fcbdn		;Delete	file specified
+	call	delete
+	ret				;Reenter  cpr
+;
+	endif				;Ras
+	page
+;
+;Section 5c
+;Command: list
+;Function:  print out specified	file on	the lst: device
+;Forms:
+;	List <ufn>	print file (no paging)
+;
+list:
+	ld	a,0ffh			;Turn on printer flag
+	jr	type0
+;
+;Section 5d
+;Command: type
+;Function:  print out specified	file on	the con: device
+;Forms:
+;	Type <ufn>	print file
+;	Type <ufn> p	print file with	paging flag
+;
+type:
+	xor	a			;Turn off printer flag
+;
+; Entry	point for cpr list function (list)
+;
+type0:
+	ld	(prflg),a		;Set flag
+	call	scaner			;Extract filename.typ token
+	jp	nz,error		;Error if any question marks
+	call	advan			;Get pgdflg if it's there
+	ld	(pgflg),a		;Save it as a flag
+	jr	z,noslas		;Jump if input ended
+	inc	de			;Put new buf pointer
+	ex	de,hl
+	ld	(cibptr),hl
+noslas:
+	call	slogin	      		;Log in	selected disk if any
+	call	openf			;Open selected file
+	jp	z,type4			;Abort if error
+	call	crlf			;New line
+      	ld	a,nlines-1		;Set line count
+	ld	(pagcnt),a
+	ld	hl,chrcnt		;Set char position/count
+	ld	(hl),0ffh		;Empty line
+	ld	b,0   			;Set tab char counter
+type1:
+	ld	hl,chrcnt		;Pt to char position/count
+	ld	a,(hl)			;End of	buffer?
+	cp	80h
+	jr	c,type2
+	push	hl			;Read next block
+	call	readf
+	pop	hl
+	jr	nz,type3		;Error?
+	xor	a			;Reset count
+	ld	(hl),a
+type2:
+	inc	(hl) 			;Increment char	count
+	ld	hl,tbuff		;Pt to buffer
+	call	addah			;Compute address of next char from offse
+	ld	a,(hl)	      		;Get next char
+	and	7fh			;Mask out msb
+	cp	1ah			;End of	file (^z)?
+	ret	z			;Restart  cpr if so
+;
+; Output char to con: or lst: device with tabulation
+;
+	cp	cr			;Reset tab count?
+	jr	z,tabrst
+	cp	lf			;Reset tab count?
+	jr	z,tabrst
+	cp     	tab			;Tab?
+	jr	z,ltab
+	call	lcout			;Output	char
+	inc	b			;Increment char	count
+	jr	type2l
+tabrst:
+	call	lcout			;Output	<cr> or	<lf>
+	ld	b,0			;Reset tab counter
+	jr	type2l
+ltab:
+	ld	a,' '			;<sp>
+	call	lcout
+	inc	b			;Incr pos count
+      	ld	a,b
+	and	7
+	jr	nz,ltab
+;
+; Continue processing
+;
+type2l:
+	call	break			;Check for abort
+	jr	z,type1			  ;Continue if no char
+	cp	'C'-'@'			;^c?
+	ret	z			;Restart  if so
+	jr	type1
+type3:
+	dec	a			;No error?
+	ret	z			;Restart  cpr
+type4:
+	jp	errlog
+;
+; Paging routines
+;   Pager counts down lines and	pauses for input (direct) if count expires
+;   Pagset sets	lines/page count
+;
+pager:
+	push	hl
+	ld	hl,pagcnt		;Count down
+	dec	(hl)
+	jr	nz,pgbak		;Jump if not end of page
+	ld	(hl),nlines-2		;Refill	counter
+	;
+pgflg	equ	$+1			;Pointer to in-the-code	buffer pgflg
+	ld	a,0			;0 may be changed by pgflg equate
+ 	cp	pgdflg			;Page default override option wanted?
+;
+	if	pgdflt			;If paging is default
+	jr	z,pgbak			;  Pgdflg means	no paging, please
+	else				;If  paging not	default
+	jr	nz,pgbak		;  Pgdflg means	please paginate
+	endif
+;
+	call	conin			;Get char to continue
+	cp	'C'-'@'			;^c
+	jp	z,rstcpr		;Restart cpr
+pgbak:
+	pop	hl			;Restore hl
+	ret
+	page
+;
+;Section 5e
+;Command: save
+;Function:  to save the	contents of the	tpa onto disk as a file
+;Forms:
+;	Save <number of	pages> <ufn>
+;				Save specified number of pages (start at 100h)
+;				From tpa into specified	file; <number of
+;				Pages> is in dec
+;	Save <number of	sectors> <ufn> s
+;				Like save above, but numeric argument specifies
+;				Number of sectors rather than pages
+;
+	if	not Ras			;not for remote-access system
+;
+save:
+	call	number			;Extract number	from command line
+	ld	l,a			;Hl=page count
+	ld	h,0
+	push	hl			;Save page count
+	call	extest			;Test for existence of file and	abort if
+	ld	c,16h			;Bdos make file
+	call	grbdos
+	pop	hl			;Get page count
+	jr	z,save3			;Error?
+	xor	a			;Set record count field	of new file's fc
+	ld	(fcbcr),a
+	call	advan			;Look for 's' for sector option
+	inc	de			;Pt to after 's' token
+	cp	sectflg
+	jr	z,save0
+	dec	de			;No 's'	token, so back up
+	add	hl,hl			;Double	it for hl=sector (128 bytes) cou
+save0:
+	ld	(cibptr),de		;Set ptr to bad	token or after good toke
+ 	ld	de,tpa			;Pt to start of	save area (tpa)
+save1:
+	ld	a,h			;Done with save?
+	or	l			;Hl=0 if so
+	jr	z,save2
+	dec	hl     			;Count down on sectors
+	push	hl			;Save ptr to block to save
+	ld	hl,128			;128 bytes per sector
+	add	hl,de			;Pt to next sector
+	push	hl			;Save on stack
+	call	dmaset			;Set dma address for write (address in d
+	ld	de,fcbdn		;Write sector
+	ld     	c,15h			;Bdos write sector
+	call	bdosb			;Save bc
+	pop	de			;Get ptr to next sector	in de
+	pop	hl			;Get sector count
+     	jr	nz,save3		;Write error?
+	jr	save1			;Continue
+save2:
+	ld	de,fcbdn		;Close saved file
+	call	close
+	inc	a			;Error?
+    	jr	nz,save4
+save3:
+	call	prnle			;Print 'no space' error
+save4:
+	call	defdma			;Set dma to 0080
+	ret				;Restart  cpr
+;
+; Test file in fcb for existence, ask user to delete if	so, and	abort if he
+;  Choses not to
+;
+extest:
+	call	scaner		       	;Extract file name
+	jp	nz,error		;'?' is	not permitted
+	call	slogin			;Log in	selected disk
+	call	searf			;Look for specified file
+	ld	de,fcbdn		;Pt to file fcb
+	ret	z			;Ok  if	not found
+	push	de			;Save ptr to fcb
+	call	printc
+	db	'Delete	File?',' '+80h					     ;Bc
+	call	conin			;Get response
+	pop	de			;Get ptr to fcb
+	cp	'Y'			;Key on	yes
+	jp	nz,rstcpr		;Restart if no
+	push	de			;Save ptr to fcb
+	call	delete			;Delete	file
+	pop	de			;Get ptr to fcb
+	ret
+	endif				;Ras
+	page
+;
+;Section 5f
+;Command: ren
+;Function:  to change the name of an existing file
+;Forms:
+;	Ren <new ufn>=<old ufn>	perform	function
+;
+	if	not Ras			;not for remote-access system
+;
+ren:
+	call	extest			;Test for file existence and return
+					; If file doesn't exist	       ; abort i
+	ld	a,(tempdr)		;Save current default disk
+	push	af			;Save on stack
+ren0:
+	ld	hl,fcbdn		;Save new file name
+	ld	de,fcbdm
+	ld	bc,16			;16 bytes
+	ldir
+	call	advan			;Advance cibptr
+	cp	'='			;'=' ok
+	jr	nz,ren4
+ren1:
+  	ex	de,hl			;Pt  to	char after '=' in hl
+	inc	hl
+	ld	(cibptr),hl		;Save ptr to old file name
+	call	scaner			;Extract filename.typ token
+	jr	nz,ren4			;Error if any '?'
+	pop	af			;Get old default drive
+	ld	b,a			;Save it
+	ld	hl,tempdr		;Compare it against current default driv
+	ld	a,(hl)			;Match?
+	or	a
+	jr	z,ren2
+	cp	b			;Check for drive error
+	ld	(hl),b
+	jr	nz,ren4
+ren2:
+	ld	(hl),b
+	xor	a
+	ld	(fcbdn),a		;Set default drive
+	ld	de,fcbdn		;Rename	file
+	ld	c,17h			;Bdos rename fct
+	call	grbdos
+	ret	nz
+ren3:
+	call	prnnf			;Print no file msg
+ren4:
+	jp	errlog
+;
+	endif				;Ras
+	page
+;
+;Section 5g
+;Command: user
+;Function:  change current user	number
+;Forms:
+;	User <unum>	select specified user number;<unum> is in dec
+;
+user:
+     	call	usrnum			;Extract user number from command line
+	ld	e,a			;Place user number in e
+	call	setusr			;Set specified user
+rstjmp:
+	jp	rcprnl			;Restart cpr
+ 
+ 
+ 
+ 
+ 
+;
+;Section 5h
+;Command: dfu
+;Function:  set	the default user number	for the	command/file scanner
+;	     (memload)
+;Forms:
+;	Dfu <unum>	select default user number;<unum> is in	dec
+;
+dfu:
+	call	usrnum			;Get user number
+	ld	(dfusr),a		;Put it	away
+	jr	rstjmp			;Restart cpr (no default login)
+ 
+ 
+ 
+ 
+ 
+;
+;Section 5i
+;Command: jump
+;Function:  to call the	program	(subroutine) at	the specified address
+;	     Without loading from disk
+;Forms:
+;	Jump <adr>		call at	<adr>;<adr> is in hex
+;
+	if	not Ras			;not for remote-access system
+;
+;jump:
+;	call	hexnum			;Get load address in hl
+;	jr	callprog		;Perform call
+;
+	endif				;Ras
+	page
+;
+;Section 5j
+;Command: x
+;Function:  to call the	program	in the tpa without loading
+;	     Loading from disk.	same as	jump 100h, but much
+;	     More convenient, especially when used with
+;	     Parameters	for programs like stat.	also can be
+;	     Allowed on	remote-access systems with no problems.
+;
+;Form:
+;	X <parameters like for command>
+;
+	if	not Ras			;only if ras
+;
+x:	ld	hl,tpa			;Always	to tpa
+	jr	callprog		;Perform call
+;
+	endif				;End of	x for ras
+ 
+ 
+ 
+ 
+;
+;Section 5k
+;Command: com file processing
+;Function:  to load the	specified com file from	disk and execute it
+;Forms:
+;	<command>
+;
+com:
+	ld	a,(fcbfn)		;Any command?
+	cp	' '			;' ' means command was 'd:' to switch
+	jr	nz,com1			;Not <sp>, so must be transient	or error
+	ld	a,(tempdr)		;Look for drive	spec
+	or	a    			;If zero, just blank
+	jp	z,rcprnl
+	dec	a			;Adjust	for log	in
+	ld	b,a
+	and	0f0h
+	jp	nz,error
+	ld	a,b
+	ld	(tdrive),a		;Set default drive
+	and	0fh
+	call	login			;Log in	drive
+	call	setu0d			;Set drive with	user 0
+	jp	rcprnl			;Restart cpr
+com1:
+	ld	a,(fcbft)		;File type must	be blank
+	cp	' '
+	jp	nz,error
+	ld	hl,commsg		;Place default file type (com) into fcb
+	ld	de,fcbft		;Copy into file	type
+	ld	bc,3			;3 bytes
+ 	ldir
+	ld	hl,tpa			;Set execution/load address
+	push	hl			;Save for execution
+	call	memload			;Load memory with file specified in cmd
+	pop	hl			;Get execution address
+	ret	nz			;Return	 (abort) if load error
+;
+; Callprog is the entry	point for the execution	of the loaded
+;   Program;on entry to	this routine, hl must contain the execution
+;   Address of the program (subroutine)	to execute
+;
+callprog:
+	ld	(execadr),hl		;Perform in-line code modification
+	call	dlogin			;Log in	default	drive
+     	call	scaner			;Search	command	line for next token
+	ld	hl,tempdr		;Save ptr to drive spec
+	push	hl
+	ld	a,(hl)			;Set drive spec
+	ld	(fcbdn),a
+	ld	hl,fcbdn+10h		;Pt to 2nd file	name
+	call	scanx			;Scan for it and load it into fcbdn+16
+	pop	hl	       		;Set up	drive specs
+	ld	a,(hl)
+	ld	(fcbdm),a
+	xor	a
+	ld	(fcbcr),a
+	ld	de,tfcb			;Copy to default fcb
+	ld	hl,fcbdn       		;From fcbdn
+	ld	bc,33			;Set up	default	fcb
+	ldir
+	ld	hl,cibuff
+com4:
+	ld	a,(hl)			;Skip to end of	2nd file name
+       	or	a			;End of	line?
+	jr	z,com5
+	cp	' '			;End of	token?
+	jr	z,com5
+	inc	hl
+	jr	com4
+;
+; Load command line into tbuff
+;
+com5:
+	ld	b,0			;Set char count
+	ld	de,tbuff+1		;Pt to char pos
+com6:
+	ld	a,(hl)			;Copy command line to tbuff
+	ld	(de),a
+	or	a			;Done if zero
+	jr	z,com7
+	inc	b			;Incr char count
+	inc	hl			;Pt to next
+	inc	de
+	jr	com6
+;
+; Run loaded transient program
+;
+com7:
+	ld	a,b			;Save char count
+	ld	(tbuff),a
+	call	crlf			;New line
+	call	defdma			;Set dma to 0080
+     	call	setud			;Set user/disk
+;
+; Execution (call) of program (subroutine) occurs here
+;
+execadr	equ	$+1			;Change	address	for in-line code modific
+	call	tpa			;Call transient
+	call	defdma			;Set dma to 0080, in case
+					;Prog changed it on us
+    	call	setu0d			;Set user 0/disk
+	call	login			;Login disk
+	jp	restrt			;Restart cpr
+;
+; Transient load error
+;
+com8:
+    	pop	hl			;Clear return address
+	call	resetusr		;Reset current user number
+					;  Reset must be done before login
+errlog:
+ 	call	dlogin			;Log in	default	disk
+errjmp:
+	jp	error
+	page
+;
+;Section 5l
+;Command: get
+;Function:  to load the	specified file from disk to the	specified address
+;Forms:
+;	Get <adr> <ufn>	load the specified file	at the specified page;
+;			<adr> is in hex
+;
+	if	not Ras			;not for remote-access system
+;
+;get:
+;	call	hexnum			;Get load address in hl
+;	push	hl			;Save address
+;	call	scaner			;Get file name
+;	pop	hl			;Restore address
+;	jr	nz,errjmp		;Must be unambiguous
+;
+; Fall thru to memload
+;
+	endif				;Ras
+;
+; Load memory with the file whose name is specified in the command line
+;   On input, hl contains starting address to load
+;
+memload:
+	call	mload			;User memory load subroutine
+	push	af			;Save return status
+	call	resetusr      		;Reset user number
+	pop	af			;Get return status
+	ret
+ 
+;
+;  Memory load subroutine
+;	Exit points are	a simple return	with the zero flag set if no error,
+; A simple return with the zero	flag reset (nz)	if memory full,	or a jmp to
+; Com8 if com file not found
+;
+mload:
+	ld	(loadadr),hl		;Set load address
+	call	getusr			;Get current user number
+	ld	(tmpusr),a		;Save it for later
+	ld	(tselusr),a		;Temp user to select
+;
+;   Mla	is a reentry point for a non-standard cp/m modification
+; This is the return point for when the	.com (or get) file is not found	the
+; First	time, drive a: is selected for a second	attempt
+;
+mla:
+	call	slogin			;Log in	specified drive	if any
+	call	openf			;Open command.com file
+	jr	nz,mla1			;File found - load it
+;
+; Error	routine	to select user 0 if all	else fails
+;
+dfusr	equ	$+1			;Mark in-the-code variable
+	ld	a,defusr		;Get default user
+tselusr	equ	$+1			;Mark in-the-code variable
+	cp	defusr			;Same?
+	jr	z,mla0			;Jump if
+	ld	(tselusr),a		;Else put down new one
+	ld	e,a
+	call	setusr			;X set new user	number
+	jr	mla			;And try again
+;
+; Error	routine	to select drive	a: if default was originally selected
+;
+mla0:
+
+	if	adrive
+
+	ld	hl,tempdr		;Get drive from	current	command
+	xor	a			;A=0
+	or	(hl)
+	jp	nz,com8	     		;Error if already disk a:
+	ld	(hl),1			;Select	drive a:
+	jr	mla
+
+	endif
+	if	not	adrive
+
+	JP	com8
+
+	endif	
+;
+; File found --	proceed	with load
+;
+mla1:
+loadadr	equ	$+1			;Memory	load address (in-line code mod)
+	ld	hl,tpa			;Set start address of memory load
+ml2:
+	ld	a,cprloc/256-1		;Get high-order	adr of just below cpr
+	cp	h			;Are we	xing to	overwrite the cpr?
+	jr	c,prnle			;Error if so
+	push	hl			;Save address of next sector
+	ex	de,hl			;...  in de
+	call	dmaset			;Set dma address for load
+	ld	de,fcbdn		;Read next sector
+	call	read
+	pop	hl			;Get address of	next sector
+	jr	nz,ml3			;Read error or eof?
+	ld	de,128			;Move 128 bytes	per sector
+	add	hl,de	  		;Pt to next sector in hl
+	jr	ml2
+;
+ml3:
+	dec	a			;Load complete
+	ret	z			;Ok if zero, else fall thru to prnle
+;
+; Load error
+;
+prnle:
+	call	printc
+	db	'Ful','l'+80h
+	ld	a,1			;Set non-zero to indicate error
+	or	a			;Set flag
+	ret
+	end
+pdr		;Get drive from	current	command
+	xor	a			;A=0
+	or	(hl)
+	jp	nz,com8	     		;Erro

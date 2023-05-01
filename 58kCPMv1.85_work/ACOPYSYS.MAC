@@ -1,0 +1,444 @@
+;
+; COPYSYS.MAC
+;
+;       26 OCT 82 (N.A.K.)-- DISSASSEMBLED FROM COPYS.COM,
+;               -- MODIFIED FOR OPTIONAL
+;                       DISK TO MEMORY OPERATION
+;               -- CLEAR CHARACTERS FROM BDOS BEFORE
+;                       READING PARAMETERS FROM CONSOLE
+;               -- ACCEPT LOWER CASE OR UPPER CASE
+;               -- PRINT MAP OF SYSTEM BUFFER
+;                       AND SIZE TO BE SAVE'D
+;       29 OCT 82 (N.A.K.)-- ADD ABILITY TO READ PARAMETERS FROM
+;                       COMMAND LINE BUFFER AT 80H
+;
+;       10 JAN 83 (N.A.K.)-- MAKE INTO RELOCATABLE FOR USE WITH
+;                       SYSGEN.LNK  (PLINK-2)
+;
+;       24 JAN 83 (N.A.K.)-- FIX SETTRK CALLS TO PUT A ZERO IN B REGISTER
+;
+;       83 JAN 31 B. COX  -- REQUIRE CARRIAGE RETURN TO TERMINATE USER INPUTS
+;                         -- ACCEPT TABS AS WHITESPACE
+;                         -- INITIALIZE PFLAG EXPLICITLY SO X (RE-EXECUTE) WORKS
+;                         -- USE STANDARD EQUATES.LIB FILE
+;                         -- CORRECT ERROR REPORTING FOR NON COMMAND-LINE INPUTS
+;       83 APR 01 W.D.TUST      -- CORRECTED CALL TO CBIOS TO CALC
+;                               -- CURDSK'S PARM HEADER S.P.T. ENTRY
+;       83 MAY 24 W.D.TUST      -- CORRECTED SECTOR NUMBER IN BC PROBLEM
+;                               -- BY CLEARING B.
+;
+;       VERS    1.5     24 MAY 83
+;
+;****************************************************************;
+;
+        PAGE
+;
+; CHECK FOR PARAMETERS ENTERED WITH PROGRAM NAME:
+;
+;  COPYSYS S D
+;
+;   WHERE "S" IS SOURCE, "D" IS DESTINATION
+;       0 -- MEMORY
+;       A,B,C,ETC. -- DRIVE NAME
+;
+;
+;  EXAMPLES:
+;
+;       A>COPYSYS 0 A   WOULD COPY FROM MEMORY AT 1000H
+;                               TO DRIVE 0 (A:)
+;       A>COPYSYS A 0   COPIES FROM A: TO MEMORY AT 1000H
+;
+;       A>COPYSYS A B   COPIES FROM A: TO B:
+;
+;
+; CHECK FOR REASONABLE PARAMETERS, I.E., ALPHA OR 0, SEPARATED
+;   BY SPACES, OPTIONALLY TERMINATED WITH ":".
+;
+        INCLUDE EQUATES.LIB             ;MUST BE UPPERCASE FOR M80
+BIOSSD  EQU     1BH                     ; BIOS SELECT DISK ENTRY
+BIOSTK  EQU     1EH                     ;BIOS SET-TRACK ENTRY
+BIOSSC  EQU     21H                     ;BIOS SET-SECTOR ENTRY
+BIOSDM  EQU     24H                     ;BIOS SET-DMA-ADDRESS ENTRY
+BIOSRD  EQU     27H                     ;BIOS READ-SECTOR ENTRY
+BIOSWT  EQU     2AH                     ;  "  WRITE-SECTOR ENTRY
+;
+;
+        EXTRN   WRSTRT
+;
+;
+        .Z80
+START:  LD      C,PRTBUF                ; ANNOUNCE VERSION NUMBER
+        LD      DE,SIGNMESS
+        CALL    BDOS
+RESTART:LD      SP,STACK
+        LD      A,0                     ;ASSUME NO COMMAND LINE PARAMETERS
+        LD      (PFLAG),A
+        LD      HL,CBUF                 ; COMMAND LINE BUFFER
+        LD      A,(HL)                  ; GET COMMAND LINE BUFFER LENGTH
+        OR      A
+        JP      Z,COND1
+        LD      A,1                     ; SET FLAG TO INDICATE PARAMETERS SET
+        LD      (PFLAG),A
+        LD      (HL),0                  ; NO PARAMETERS FOR RE-EXECUTE CASE
+        INC     HL                      ; POINT TO FIRST CHARACTER
+        LD      A,(HL)                  ; MUST BE A SPACE
+        CP      TAB
+        JR      Z,WHTOK
+        CP      ' '
+        JP      NZ,BADLIN               ; EXIT IF BAD PARAMETERS
+ 
+WHTOK:  CALL    SKPWHT                  ; SKIP SPACES (WHITE SPACE)
+        CALL    GETPAR                  ; GET PARAMETER, EXIT IF BAD
+        LD      (SRCDRV),A              ; STORE PARAMETER
+        LD      A,(HL)
+        CP      TAB
+        JR      Z,WHTOK2
+        CP      ' '                     ; NEXT CHAR MUST BE A SPACE
+        JP      NZ,BADLIN
+ 
+WHTOK2: CALL    SKPWHT                  ; SKIP SPACES
+        CALL    GETPAR
+        LD      (DSTDRV),A              ; STORE PARAMETER
+        LD      A,(HL)
+        CP      ' '                     ; MUST BE A SPACE OR
+        JP      Z,COND1                 ;
+        CP      00H                     ; A NULL CHARACTER (END OF BUFFER)
+        JP      NZ,BADLIN
+            
+COND1:  LD      A,(PFLAG)               ; TEST FOR COMMAND LINE PARAMETERS
+        OR      A
+        JR      Z,COND2                 ; IF NOT, GET PARAM FROM CONSOLE
+        LD      A,(SRCDRV)
+        JR      COND3
+ 
+COND2:  LD      DE,SRCMESS              ; GET SOURCE DRIVE NAME
+        CALL    GETDRIVE
+COND3:  CP      CR                      ; CHECK FOR NULL INPUT
+        JP      Z,GETDEST
+        CALL    SELDRV
+        CALL    GETSPT                  ; GET CP/M SECTORS-PER-TRACK
+        LD      A,BIOSRD                ; READ SYSTEM TRACKS
+        CALL    DOIO
+            
+GETDEST:                                ; GET DESTINATION DRIVE NAME
+        LD      A,(PFLAG)               ; TEST FOR COMMAND LINE PARAMETERS
+        OR      A
+        JR      Z,COND4                 ; IF NOT, GET PARAM FROM CONSOLE
+        LD      A,(DSTDRV)
+        JR      COND5
+COND4:  LD      DE,DSTMSG               ;GET DESTINATION DRIVE NAME
+        CALL    GETDRIVE
+COND5:  CP      CR                      ; CHECK FOR CARR.RET
+        JP      NZ,NOTCR
+        LD      C,PRTBUF                ; PRINT SIGNOFF MESSAGE
+        LD      DE,MEMMSG
+        CALL    BDOS
+        JP      CPM
+ 
+NOTCR:  CALL    SELDRV
+        CALL    GETSPT                  ; GET CP/M SECTORS-PER-TRACK
+        LD      HL,WRSTRT               ; SET INITIAL DMAADR VALUE
+        LD      (DMAADR),HL
+        LD      A,0                     ; SET NUMBER SECTORS LOADED TO 0
+        LD      (NLOADED),A
+        LD      A,BIOSWT                 ; WRITE SYSTEM TRACKS
+        CALL    DOIO
+        JP      CPM                     ; WARM BOOT
+ 
+ 
+GETSPT: LD      DE,10                   ; OFFSET TO DBLK POINTER
+        ADD     HL,DE                   ; CALC POINTER
+;       HL:= POINTER TO DBLK'S ADDRESS
+        LD      E,(HL)                  ; LOW DPBLK ADDRESS
+        INC     HL                      ;
+        LD      D,(HL)                  ; HI DPBLK ADDRESS
+        EX      DE,HL                   ; SWITCH REGISTERS
+;       HL:= POINTER TO D.P.BLK SPT
+        LD      A,(HL)                  ; LSBYTE
+        LD      (CPMSPT),A              ;
+        RET
+        PAGE
+;
+; ACTUALLY READ/WRITE SYSTEM TRACKS
+;       INPUT:  A = I/O OPCODE (27H FOR READ, 2AH FOR WRITE)
+;
+DOIO:   LD      (OPCODE),A
+        LD      BC,0                    ; SET TO TRACK ZERO
+        LD      (CTRACK),BC
+	LD	A,BIOSTK
+        CALL    GOBIOS			;CALL SETTRK
+        XOR     A                       ;SET SECTOR TO ZERO
+        LD      (CSEC),A
+        LD      C,A
+        LD      B,0                     ;CLEAR HI-ORDER SECOTR NUMB.
+	LD	A,BIOSSC
+        CALL    GOBIOS			;SET SECTOR
+        LD      BC,(DMAADR)
+	LD	A,BIOSDM
+        CALL    GOBIOS		;SET DMA ADDRESS
+ 
+IOLOOP: LD	A,(2)
+	LD	(OPCODE+1),A
+	CALL    X'0000'			;(LOW BYTE SUPPLIED BY CALLER)
+OPCODE  EQU     $-2
+        OR      A                       ;IF I/O ERROR, ISSUE ERROR & EXIT
+        JP      NZ,IOERR
+        LD      A,(OPCODE)             ; IF WRITING, VERIFY BY RE-READING
+        CP      BIOSWT                  ; COMPARING IT TO THE DATA AT DMAADR
+        JR      NZ,DOREAD
+        LD      BC,CBUF
+	LD	A,BIOSDM
+        CALL    GOBIOS			; POINT DMA ADDRESS AT CBUF
+	LD	A,BIOSRD
+        CALL    GOBIOS			; READ LAST SECTOR
+        OR      A                       ;IF READ ERROR, ISSUE ERROR & EXIT
+        JR      NZ,BADRD
+        LD      BC,128
+        LD      DE,CBUF
+        LD      HL,(DMAADR)
+LOOP:   LD      A,(DE)                  ; SECTOR-VERIFY LOOP
+        INC     DE
+        CP      (HL)
+        INC     HL
+        JR      NZ,BADWRT
+        DEC     C
+        JR      NZ,LOOP
+DOREAD: LD      A,(CSEC)                ;INCREMENT SECTOR NUMBER
+        INC     A
+        LD      (CSEC),A                ;SAVE NEW SECTOR #
+        LD      B,A
+        LD      A,(CPMSPT)
+        DEC     A
+        CP      B                       ;JUMP IF NO TRACK CHANGE
+        JR      NC,SAMETRK
+        LD      A,(CTRACK)              ;BUMP TRACK NUMBER
+        INC     A
+        LD      C,A
+        LD      (CTRACK),A
+        LD      B,0
+	LD	A,BIOSTK
+        CALL    GOBIOS			;SET TRACK NUMBER
+        XOR     A                       ;START AT SECTOR 0
+        LD      (CSEC),A
+SAMETRK:        
+        LD      A,(CSEC)
+        LD      C,A
+        LD      B,0                     ;CLEAR HI-ORDER SECOTR NUMB.
+	LD	A,BIOSSC
+        CALL    GOBIOS			;SET SECTOR NUMBER
+        LD      A,(NLOADED)
+        INC     A
+        LD      (NLOADED),A             ;INCREMENT # OF SECTORS LOADED
+        CP      SYSTSZ/128              ; NUMBER OF SECTORS TO READ/WRITE
+        RET     Z
+ 
+        LD      HL,(DMAADR)             ;INCREMENT I/O ADDRESS
+        LD      DE,128                  ; BY LENGTH OF 1 LOGICAL SECTOR
+        ADD     HL,DE
+        LD      (DMAADR),HL
+        PUSH    HL
+        POP     BC
+	LD	A,BIOSDM
+        CALL    GOBIOS			;SET DMA ADDRESS
+        JP      IOLOOP
+ 
+ 
+IOERR:  LD      C,PRTBUF                ;ISSUE ERROR
+        LD      DE,ERRMSG
+        CALL    BDOS
+        JP      CPM                     ;DO WARM BOOT
+ 
+BADRD:  LD      C,PRTBUF
+        LD      DE,BADR
+        CALL    BDOS
+        JP      CPM
+ 
+BADWRT: LD      C,PRTBUF
+        LD      DE,BADW
+        CALL    BDOS
+        JP      CPM
+        PAGE
+;
+; READ DRIVE NAME FROM USER
+;
+GETDRIVE:
+        LD      C,PRTBUF                ;OUTPUT PROMPT MESSAGE
+        CALL    BDOS
+        LD      DE,CBUF                 ;READ A RESPONSE LINE
+        LD      A,126                   ; INTO CBUF
+        LD      (DE),A                  ; (LENGTH INTO BUFFER)
+        LD      C,10
+        CALL    BDOS
+        LD      HL,CBUF+1               ;CONVERT EMPTY INPUT INTO CR
+        LD      A,(HL)                  ; (GET BUFFER LENGTH)
+        INC     HL
+        OR      A
+        JR      NZ,GETDR0
+        LD      A,CR
+        RET
+ 
+GETDR0: ADD     A,L                     ; PUT ZERO TERMINATOR ONTO END OF
+        LD      L,A                     ; INPUT LINE, TO MODEL CCP'S INPUT
+        LD      A,H
+        ADC     A,0
+        LD      H,A
+        LD      (HL),0
+        LD      HL,CBUF+1               ; POINT BACK AT BEGINNING
+        CALL    SKPWHT                  ; SKIP WHITESPACE
+        JR      GETPAR
+ 
+ 
+ 
+;
+; SUBROUTINES FOR COMMAND LINE PARAMETER PROCESSING
+;
+SKPWHT: INC     HL                      ; SKIP WHITE SPACE (SPACES
+        LD      A,(HL)                  ;  AND TABS)
+        CP      ' '
+        JR      Z,SKPWHT
+        CP      TAB
+        JR      Z,SKPWHT
+        RET
+ 
+ 
+;
+; UPPER-CASE THE LETTER IN A
+;
+UCASE:  CP      'a'
+        RET     C
+        CP      'z'+1
+        RET     NC
+        RES     5,A
+        RET
+ 
+ 
+;
+; LOOK FOR A LETTER (UPPERCASE) OR THE DIGIT '0',
+;      OPTIONALLY FOLLOWED BY A COLON.
+; RETURN THE DRIVE CODE IN A REG. (CONVERT '0' TO CR).
+; HL POINTS TO NEXT CHAR UPON RETURN.
+;
+GETPAR: LD      A,(HL)                  ; FORCE UPPER CASE
+        CALL    UCASE
+        CP      'P'+1                   ; CHECK FOR GREATER THAN 'P'
+        JR      NC,GTPR3
+        CP      'A'                     ; CHECK FOR LESS THAN 'A'
+        JR      NC,GTPR2
+        CP      '0'                     ; LAST CHANCE TO BE OKAY
+        JR      NZ,GTPR3
+        LD      A,CR                    ; CONVERT '0' TO CR (CARR. RET.)
+GTPR2:  LD      B,A                     ; SAVE THE PARAMETER
+        INC     HL
+        LD      A,(HL)
+        CP      ':'                     ; A COLON MAY FOLLOW THE PARAMETER
+        JR      NZ,GTPR4
+        INC     HL
+GTPR4:  LD      A,B                     ; RESTORE PARAMETER
+        RET
+ 
+GTPR3:  POP     BC                      ; DISCARD RETURN ADDRESS
+        JP      BADLIN
+        PAGE
+;
+; EXIT IF BAD PARAMETER SYNTAX FOUND
+;
+BADLIN: LD      DE,ILLGL                ; "INVALID DRIVE NAME"
+        LD      C,PRTBUF
+        CALL    BDOS
+        JP      RESTART
+ 
+ 
+ 
+;
+;
+; SELECT DRIVE
+;
+SELDRV: SUB     'A'                     ; CONVERT TO DRIVE NUMBER
+        LD      C,A                     ; DRIVE NUMBER IN "C"
+	LD	A,BIOSSD
+        CALL    GOBIOS			; SELECT DISK AND RETURN DISK PARAMETER HEADER
+        RET
+;
+GOBIOS:	PUSH	AF			; SAVE AF FOR LATER
+	LD	A,(2)			; GET BASE PAGE OF BIOS
+	LD	H,A			; INTO H IT GOES
+	POP	AF			; GET BIOS OFFSET
+	LD	L,A			; INTO L
+	JP	(HL)			; GOTO BIOS FUNCTION
+        PAGE
+ERRMSG: DB      CR,LF,'SYSTEM SAVE ERROR'
+        DB      CR,LF
+        DB      '$'
+ 
+BADR:   DB      CR,LF,'READ-AFTER-WRITE I/O FAILED'
+        DB      CR,LF
+        DB      '$'
+ 
+BADW:   DB      CR,LF,'READ-AFTER-WRITE COMPARE FAILED'
+        DB      CR,LF
+        DB      '$'
+ 
+SIGNMESS:
+        DB      CR,'ADS COPYSYS v1.8',CR,LF
+        DB      '$'
+ 
+SRCMESS:
+        DB      CR,LF,'   SYSTEM SOURCE DRIVE, OR CARRIAGE RETURN'
+        DB      CR,LF,'         TO READ FROM MEMORY STARTING AT 1000H? '
+        DB      '$'
+ 
+DSTMSG:
+        DB      CR,LF,'   DESTINATION DRIVE, OR CARRIAGE RETURN TO SKIP? '
+        DB      '$'
+ 
+MEMMSG:
+        DB      CR,LF
+	DB	LF
+	DB	'      MEMORY LAYOUT:'
+        DB      CR,LF,9,'1000H - 10FFH COLD BOOT LOADER'
+	DB	CR,LF,9,'1100H - 11FFH AVAILABLE SPACE FOR BOOT MESSAGE'
+	DB	CR,LF,9,'1200H - 1202H DEFAULT PARAMETERS FOR SIO 1'
+	DB	CR,LF,9,'1203H - 1205H DEFAULT PARAMETERS FOR SIO 2'
+	DB	CR,LF,9,'1206H - 1208H DEFAULT PARAMETERS FOR SIO 3'
+	DB	CR,LF,9,'1209H - 120BH DEFAULT PARAMETERS FOR SIO 4'
+	DB	CR,LF,9,'120CH         DEFAULT I/O BYTE'
+	DB	CR,LF,9,'120DH         DEFAULT PADDING CHARACTER FOR UL1:'
+	DB	CR,LF,9,'120EH         DEFAULT NULLS AFTER BS  FOR UL1:'
+	DB	CR,LF,9,'120FH         DEFAULT NULLS AFTER TAB FOR UL1:'
+	DB	CR,LF,9,'1210H         DEFAULT NULLS AFTER LF  FOR UL1:'
+	DB	CR,LF,9,'1211H         DEFAULT NULLS AFTER FF  FOR UL1:'
+	DB	CR,LF,9,'1212H         DEFAULT NULLS AFTER CR  FOR UL1:'
+	DB	CR,LF,9,'1213H         DEFAULT MPIO BOARD STATUS BYTE'
+        DB      CR,LF,9,'1280H - 1A7FH ZCPR'
+        DB      CR,LF,9,'1A80H - 287FH BDOS'
+        DB      CR,LF,9,'2880H - 407FH BIOS'
+        DB      CR,LF,'$'
+;
+SYSTSZ  EQU     4080H-1000H     ; SIZE OF RAM AREA READ/WRITTEN
+;
+ILLGL:  DB      CR,LF,'  INVALID SOURCE/DESTINATION NAME'
+        DB      CR,LF,'  VALID ONES ARE ZERO (0 = MEMORY) OR'
+        DB      CR,LF,'  DRIVE NAMES A THROUGH P, OPTIONALLY'
+        DB      CR,LF,'  FOLLOWED BY A COLON.'
+        DB      CR,LF
+        DB      '$'
+;
+; STORAGE FOR PARAMETERS
+;
+SRCDRV: DS      1                       ; SOURCE DRIVE NAME FROM COMMAND LINE
+DSTDRV: DB      1                       ; DESTINATION DRIVE NAME FM COMMAND LINE
+PFLAG:  DS      1                       ;COMMAND-LINE PARAMETERS FLAG
+NTOLOAD:                                ; # OF CP/M SECTORS TO LOAD
+        DS      1
+NLOADED: DS     1                       ; # OF CP/M SECTORS LOADED
+CSEC:   DS      1                       ; CURRENT SECTOR
+CTRACK: DS      2                       ; CURRENT TRACK
+CPMSPT: DS      1                       ; CP/M SECTORS PER TRACK
+DMAADR: DW      WRSTRT                  ; CURRENT I/O ADDRESS
+CURDPH: DW      1                       ; CURRRENT DRIVES'S DPH POINTER
+ 
+ 
+        DS      100H                    ; OUR OWN STACK
+STACK:
+        END     START
+

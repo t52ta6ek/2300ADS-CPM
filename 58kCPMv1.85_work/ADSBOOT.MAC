@@ -1,0 +1,146 @@
+;************************************************;
+;*						*;
+;*	ads boot version 1.43			*;
+;*						*;
+;*	start date: 27 mar 83			*;
+;*	last update: 12	apr 83			*;
+;*						*;
+;*						*;
+;************************************************;
+;
+;
+;   	this boot routine uses a track read technique and switches
+;	to next	track by a calculated byte count. the controller
+;      	allows us to do	this, however, a error status is returned from
+;	terminal byte output. this status is track overrun and it can  
+;	be ignored, but	only on	this occasion.
+;
+;
+	.z80
+	public	boot
+	extrn	zcpr,cbios,crtram,PRMSG,BOOTMSG,DEFTBL,DEFLEN,WRKTBL
+	EXTRN	INIT
+ 
+cntrl	equ	0d8h
+data	equ  	0d9h
+crtadr	equ	0f800h			; base of crt screen ram
+trksiz	equ	52*128			; bytes	contained on one track
+;
+	cseg
+boot:	di     			; disable interrupts
+	ld	sp,X'0100'
+	ld	a,2			;disable boot prom
+	out	(0f6h),a
+; 
+reboot:	ld	de,trksiz
+	ld	hl,zcpr-180H
+	ld	bc,0002h		;read track 0, sector 2
+	call	rdtrk
+	push	hl			;save current input ptr
+	ld	hl,crtram+280H		; Compute remaining length =Š	ld	de,zcpr			; crtram-zcpr-amt already read
+	or	a
+	sbc	hl,de
+	ld	de,trksiz
+	or	a
+	sbc	hl,de
+	ex	de,hl			;length	into de
+	pop	hl			;restore input ptr
+	ld	bc,0100h		;read track 1, sector 0
+	call	rdtrk
+;
+	LD	HL,DEFTBL
+	LD	DE,WRKTBL
+	LD	BC,DEFLEN
+	LDIR
+;
+	CALL	INIT
+;
+	LD	HL,BOOTMSG
+	CALL	PRMSG
+;
+	jp	cbios			;jump to bdos cold boot
+ 
+ 
+rdtrk:	ld	a,b			;save track #
+	ld	(track),a
+	ld	a,c			;save sector #
+	ld	(sector),a
+	call	dcmd
+	call	read
+	call	wait
+	ld	a,(status)		; end of track status
+	cp	3			; 0,1,2	is ok ,	else re-boot
+	ret	c    			;
+	pop	af			; unjunk stack
+	jP	reboot			; start	over from the top
+ 
+ 
+dcmd:	call	dwait
+	ld	a,86h			;output	read command
+	cpl
+	out	(cntrl),a
+	call	dwait
+	ld	a,0ffh			;output	unit 0,	head 0
+	out	(data),a
+	call	dwait
+	ld	a,(track)		;output	track
+	cpl
+	out	(data),a
+	call	dwait
+	ld	a,(sector)		;output	sector
+	cpl
+	out	(data),a
+	call	dwait
+	ld	a,0ffh			; aux parm.
+	out	(data),a
+	call	dwait			;
+	ret
+ 
+read:	in	a,(cntrl)		;get status
+	cpl
+	and	0c0h			;attention or input mode?
+       	jr	z,read
+	and	80h			;exit if attention bit
+	ret	nz
+	in	a,(data)		;data byte to memoryŠ	cpl
+	ld	(hl),a
+	inc	hl
+	dec	de  			;decrement count
+	ld	a,e
+	or	d
+	jr	nz,read
+wredy:	in	a,(cntrl)		;wait until controller ready
+	and	2
+	jr	nz,wredy
+     	ld	a,0ffh			;send termination byte
+	out	(cntrl),a
+	ret
+ 
+ 
+ 
+ 
+wait:	in	a,(cntrl)		;wait for input	ready +	attention bit
+	cpl
+	and	0a0h
+	cp	0a0h
+	jp	nz,wait
+	in	a,(data)		;read and discard status???
+	cpl
+	ld	(status),a		; save terminal	status
+waita:	in	a,(cntrl)		;wait for attention bit
+	and	80h
+	jp	z,waita
+	ret
+ 
+ 
+dwait:	in	a,(cntrl)
+	and	2
+	jp	nz,dwait
+ 	ret
+;
+track:	db	0
+sector:	db	2
+status:	db	0
+;
+	end
+
