@@ -4,7 +4,8 @@ This is the content of the CP/M directory that I used for development of the CP/
 for the FutureData 2300 ADS. FutureData was sold to GenRad, and this division was ultimately
 sold to Kontron in the early 80's where I worked for many years.
 
-This was the lastest version of CP/M I had developed for this machine.
+This was the lastest version of CP/M I had developed for this machine. It was commercially
+released by Kontron as an option in addition to RDOS and UDOS operating systems.
 
 These files were pulled off of DSDD 8" floppy disk backups I had made of my 35mb hard drive.
 That hard drive has unfortunately disappeared but the backups remain.
