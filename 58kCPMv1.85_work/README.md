@@ -1,10 +1,13 @@
-2300 ADS 58k CP/M 2.2 v1.85
+# 2300 ADS 58k CP/M 2.2 v1.85
 
-Copy of the CP/M directory that I used for development of the CP/M system for the
-FutureData 2300 ADS. FutureData was sold to GenRad, and this division was ultimately
+This is the content of the CP/M directory that I used for development of the CP/M system
+for the FutureData 2300 ADS. FutureData was sold to GenRad, and this division was ultimately
 sold to Kontron in the early 80's where I worked for many years.
 
 This was the lastest version of CP/M I had developed for this machine.
+
+These files were pulled off of DSDD 8" floppy disk backups I had made of my 35mb hard drive.
+That hard drive has unfortunately disappeared but the backups remain.
 
 Contains not only source code to the system, but also the various system utilities
 used for editing code, performing the build, formatting disks and other various
@@ -41,15 +44,12 @@ with the Z80-SIM CP/M emulator which runs on Windows. Z80-SIM is just enough CP/
 allow you to rebuild the the system, and product the ACOPYSYS.COM system generation
 tool. See that folder for specific instruction to perform the build.
 
-Description of files:<br>
-EQUATES.LIB   - definitions for BDOS.MAC<br>
-ACOPYSYS.MAC  - system boot disk creation utility<br>
+<b>2300 ADS 58k CP/M 2.2 v1.85</b><br>
+ADSCHG.TXT    - ADS CP/M revisions list<br>
 ADSBOOT.MAC   - CP/M coldboot loader<br>
-AFORMAT.MAC   - Floppy format utility<br>
-ASETSIO.MAC   - Utility for setting RS-232 serial parameters<br>
 BDOS.MAC      - CP/M 2.2 BDOS<br>
+EQUATES.LIB   - definitions for BDOS.MAC<br>
 BOOTMSG.MAC   - Console boot message after CP/M boots<br>
-BOOTPROM.MAC  - Experimental boot EPROM for Network Control Processer. This can be used to turn an NCP control unit into a headless CP/M system.<br>
 CBIOS.MAC     - 2300 ADS CBIOS<br>
 CRT.MAC       - Console CRT and Keyboard drivers. Nominal emulation of ADDS Viewpoint control codes<br>
 DEFAULTS.MAC  - Default serial port and console settings<br>
@@ -69,44 +69,57 @@ UP2.MAC       - Serial port 4 output support<br>
 UR1.MAC       - Serial port 3 input support<br>
 UR2.MAC       - Serial port 4 input support<br>
 ZCPR.MAC      - ZCPR 4.0 shell<br>
-ACOPYSYS.MAP  - Plink linker-created MAP file<br>
+ASM.SUB       - Batch file for performing the assembly builds<br>
+CPM58K.LNK    - PLinkII linker command file for creating ADS CP/M ACOPSYS.COM<br>
+
+<b>Experimental boot EPROM</b><br>
+BOOTPROM.MAC  - Experimental boot EPROM for Network Control Processer. This can be used to turn an NCP control unit into a headless CP/M system.<br>
+BOOTPROM.LNK  - PLinkII linker command file for BOOTPROM.MAC<br>
+
+<b>Utilities Required To Build 2300 ADS CP/M</b><br>
+DO.COM        - DO 1.5<br>
+M80.COM       - Microsoft M80 Macro Assembler<br>
+PLINK.COM     - PSA Linkage Editor II<br>
+ZAP.COM       - Zero unused memory<br>
+
+<b>Utilities Specically Created for the 2300 ADS CP/M</b><br>
 AAUTOST.COM   - Utility to set initial command to run after CP/M boots<br>
+ACOPYSYS.MAC  - system boot disk creation utility<br>
 ACOPYSYS.COM  - ADS CPM's "sysgen" utility<br>
+ACOPYSYS.MAP  - Plink linker-created MAP file<br>
+AFORMAT.MAC   - Floppy format utility<br>
 AFORMAT.COM   - Disk format utility<br>
 AFORMAT2.COM  - Alternate disk format utility implemented in Turbo Pascal<br>
 AMODEM7.COM   - Original implementation of Modem7 for ADS CP/M.<br>
-ARK.COM       - ARK v1.1<br>
 ASETDRV.COM   - Utility to allow custom associations of CP/M drive letters to specific controllers/drive units<br>
 ASETDSK.COM   - Utility to set which drives are SSDD and DSDD<br>
 ASETIO.COM    - Utility to set the CP/M I/O byte<br>
+ASETSIO.MAC   - Utility for setting RS-232 serial parameters<br>
 ASETSIO.COM   - Utility to set serial port parameters<br>
+NCPINIT.COM   - Utility to format local 35mb NCP hard disk drive<br>
+
+<b>Programs Configured for 2300 ADS CP/M</b><br>
+MDM7.COM      - MDM7 used for most day to day activies, calling BBSes, uploads/downloads<br>
+WASH.COM      - WASH v3.6 for ADS CP/M<br>
+WS.COM        - WordStar 3.30 configured for ADS CP/M and NEC Spinwriter printer which I used at that time<br>
+WSMSGS.OVR    - WordStar 3.30<br>
+WSOVLY1.OVR   - WordStar 3.30<br>
+
+<b>Other Off-The-Shelf Utlities</b><br>
+ARK.COM       - ARK v1.1<br>
 CRCK.COM      - CRCK v5.1<br>
-DO.COM        - DO 1.5<br>
 DU.COM        - DU2 v1.7<br>
 DUMP.COM      - DUMP v1.0<br>
 FBAD.COM      - FBAD57<br>
-M80.COM       - Microsoft M80 Macro Assembler<br>
-MDM7.COM      - MDM7 used for most day to day activies, calling BBSes, uploads/downloads<br>
 MEMR.COM      - Memory test program<br>
-NCPINIT.COM   - Utility to format local 35mb NCP hard disk drive<br>
 NULU.COM      - NULU v1.0<br>
-PIP.COM       - PIP v1.5<br>
-PLINK.COM     - PSA Linkage Editor II<br>
+PIP.COM       - PIP v1.5 as delivered with 2300 ADS CP/M<br>
 RECLAIM.COM   - RECLAIM v2.1<br>
 SAP.COM       - SAP v4.2<br>
-STAT.COM      - CP/M STAT<br>
+STAT.COM      - CP/M STAT as delivered with 2300 ADS CP/M<br>
 UNARC.COM     - UNARC v1.6<br>
 UNERA.COM     - UNERA v2.2<br>
 USQ.COM       - USQ v1.18<br>
-WASH.COM      - WASH v3.6 for ADS CP/M<br>
-WS.COM        - WordStar 3.30 configured for ADS CP/M and NEC Spinwriter printer which I used at that time<br>
-XOUT.COM      - XOUT for XSUB<br>
-XSUB.COM      - XSUB v1.4<br>
-ZAP.COM       - Zero unused memory<br>
-ZSID.COM      - ZSID v1.4<br>
-WSMSGS.OVR    - WordStar 3.30<br>
-WSOVLY1.OVR   - WordStar 3.30<br>
-BOOTPROM.LNK  - PLinkII linker command file for BOOTPROM.MAC<br>
-CPM58K.LNK    - PLinkII linker command file for creating ADS CP/M ACOPSYS.COM<br>
-ASM.SUB       - Batch file for performing the assembly builds<br>
-ADSCHG.TXT    - ADS CP/M revisions list<br>
+XOUT.COM      - XOUT for XSUB as delivered with 2300 ADS CP/M<br>
+XSUB.COM      - XSUB v1.4 as delivered with 2300 ADS CP/M<br>
+ZSID.COM      - ZSID v1.4 as delivered with 2300 ADS CP/M<br>
