@@ -75,7 +75,7 @@ ZCPR.MAC      - ZCPR 4.0 shell<br>
 <b>Assemble and Link to produce ACOPYSYS.COM sysgen utility</b><br> 
 ASM.SUB       - Batch file for performing the assembly builds<br>
 CPM58K.LNK    - PLinkII linker command file for creating the sysgen utility ACOPYSYS.COM<br>
-ACOPYSYS.MAC  - system boot disk creation utility<br>
+ACOPYSYS.MAC  - Sources for system boot disk creation utility<br>
 ACOPYSYS.COM  - The end product of the build is the ADS CPM's "sysgen" utility<br>
 ACOPYSYS.MAP  - Plink linker-created MAP file<br>
 
@@ -91,16 +91,16 @@ PLINK.COM     - PSA Linkage Editor II<br>
 ZAP.COM       - Zero unused memory<br>
 
 <b>Utilities specifically created for 2300 58k ADS CP/M 2.2 v1.85</b><br>
-Some of these utilities were implemented in Turbo Pascal. The source code for these will be forthcoming. The utilities only work with this specific version of the operating system.<br> 
+Most of these utilities were implemented in Turbo Pascal. The source code for these will be forthcoming. The utilities only work with this specific version of the operating system as they access CBIOS internal data structures.<br> 
 AAUTOST.COM   - Utility to set initial command to run after CP/M boots<br>
-AFORMAT.MAC   - Floppy format utility<br>
+AFORMAT.MAC   - 8" floppy disk formatter source<br>
 AFORMAT.COM   - Disk format utility<br>
 AFORMAT2.COM  - Alternate disk format utility implemented in Turbo Pascal<br>
 AMODEM7.COM   - Original implementation of Modem7 for ADS CP/M.<br>
 ASETDRV.COM   - Utility to allow custom associations of CP/M drive letters to specific controllers/drive units<br>
 ASETDSK.COM   - Utility to set which drives are SSDD and DSDD<br>
 ASETIO.COM    - Utility to set the CP/M I/O byte<br>
-ASETSIO.MAC   - Utility for setting RS-232 serial parameters<br>
+ASETSIO.MAC   - Source code for utility for setting RS-232 serial parameters<br>
 ASETSIO.COM   - Utility to set serial port parameters<br>
 NCPINIT.COM   - Utility to format local 35mb NCP hard disk drive<br>
 
