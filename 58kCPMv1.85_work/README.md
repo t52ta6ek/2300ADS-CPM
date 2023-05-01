@@ -33,7 +33,7 @@ be tidy.<br>
 <b>ZAP</b><br>
 <b>ACOPYSYS 0 B</b><br>
 
-Then, hit the \<RESET\> key. Place the newly created bootfloppy from drive B: into the
+Then, hit the \<LOAD\> key. Place the newly created bootfloppy from drive B: into the
 boot drive. At the bootprom's promt, the \<C\>\<RETURN\> to boot CP/M.
 
 The "winbuild" folder under the 2300ADS-CPM github contains the same files, but pre-packed
@@ -41,33 +41,33 @@ with the Z80-SIM CP/M emulator which runs on Windows. Z80-SIM is just enough CP/
 allow you to rebuild the the system, and product the ACOPYSYS.COM system generation
 tool. See that folder for specific instruction to perform the build.
 
-Description of files:
-EQUATES.LIB
-ACOPYSYS.MAC
-ADSBOOT.MAC
-AFORMAT.MAC
-ASETSIO.MAC
-BDOS.MAC
-BOOTMSG.MAC
-BOOTPROM.MAC
-CBIOS.MAC
-CRT.MAC
-DEFAULTS.MAC
-DHDISK.MAC
-FLOPPY.MAC
-HDISK.MAC
-LPT.MAC
-MEU.MAC
-PTP.MAC
-PTR.MAC
-REINIT.MAC
-TABLES.MAC
-TTY.MAC
-UL1.MAC
-UP1.MAC
-UP2.MAC
-UR1.MAC
-UR2.MAC
+Description of files:<br>
+EQUATES.LIB   - definitions for BDOS.MAC<br>
+ACOPYSYS.MAC  - system boot disk creation utility<br>
+ADSBOOT.MAC   - CP/M coldboot loader<br>
+AFORMAT.MAC   - Floppy format utility<br>
+ASETSIO.MAC   - Utility for setting RS-232 serial parameters<br>
+BDOS.MAC      - CP/M 2.2 BDOS<br>
+BOOTMSG.MAC   - Console boot message after CP/M boots<br>
+BOOTPROM.MAC  - Experimental boot EPROM for Network Control Processer. This can be used to turn an NCP control unit into a headless CP/M system.<br>
+CBIOS.MAC     - 2300 ADS CBIOS<br>
+CRT.MAC       - Console CRT and Keyboard drivers. Nominal emulation of ADDS Viewpoint control codes<br>
+DEFAULTS.MAC  - Default serial port and console settings<br>
+DHDISK.MAC    - Dummy hard disk - to delete hard disk support<br>
+FLOPPY.MAC    - Micropolis floppy disk controller<br>
+HDISK.MAC     - Local NCP Hard disk drivers<br>
+LPT.MAC       - LPT device (parallel port)<br>
+MEU.MAC       - Memory Expansion Unit RAM disk driver<br>
+PTP.MAC       - Paper tape punch (serial port 2)<br>
+PTR.MAC       - Paper tape reader (serial port 2)<br>
+REINIT.MAC    - Reinitialize peripherals that were reset by \<RESET\><br>
+TABLES.MAC    - Used by REINIT.MAC to reload console and serial settings<br>
+TTY.MAC       - Serial TTY (serial port 1)<br>
+UL1.MAC       - Serial printer (serial port 2)<br>
+UP1.MAC       - Serial port 3 output support<br>
+UP2.MAC       - Serial port 4 output support<br>
+UR1.MAC       - Serial port 3 input support<br>
+UR2.MAC       - Serial port 4 input support<br>
 ZCPR.MAC
 ACOPYSYS.MAP
 AAUTOST.COM
