@@ -62,7 +62,7 @@ tool. See that folder for specific instruction to perform the build.
 - MEU.MAC       - Memory Expansion Unit RAM disk driver
 - PTP.MAC       - Paper tape punch (serial port 2)
 - PTR.MAC       - Paper tape reader (serial port 2)
-- REINIT.MAC    - Reinitialize peripherals that were reset if \<RESET\> keypressed
+- REINIT.MAC    - Reinitialize peripherals that were reset if \<RESET\> key pressed
 - TABLES.MAC    - Used by REINIT.MAC to reload console and serial settings
 - TTY.MAC       - Serial TTY (serial port 1)
 - UL1.MAC       - Serial printer (serial port 2)
