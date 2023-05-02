@@ -1,7 +1,7 @@
 # 2300 ADS 58k CP/M 2.2 v1.85 Working Directory
 
 This is the content of the CP/M directory that I used for development of the CP/M system
-for the GenRad 2300 Advanced Development System. MicroKit/FutureData was sold to GenRad,
+for the GenRad 2300 Advanced Development System. FutureData was sold to GenRad,
 and this division was ultimately sold to Kontron in the early 80's where I worked for
 many years.
 
