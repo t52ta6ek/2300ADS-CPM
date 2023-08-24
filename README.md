@@ -23,7 +23,6 @@ Should you have any questions, I can still offer limited assistance with this ma
 ## Related sites of interest
 http://bitsavers.trailing-edge.com/pdf/futuredata/ <br>
 https://texelec.com/product/foam-capacitive-pads-keytronic/ <br>
-http://marc.retronik.fr/marc/Annonces/Materiel/Cromemco/Hacksaw%20Programming.pdf <br>
 http://bbslist.textfiles.com/213/oldschool.html (see entry for YARBBS) <br>
 
 ### Honorable mention (PolyMorphic Systems 8813 - the other computer)
