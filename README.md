@@ -1,30 +1,50 @@
-# 2300ADS-CPM
-CP/M 2.2 for the GenRad 2300 Advanced Development System (aka MicroKit, FutureData, GenRad and Kontron 2300 ADS)
+# Performing a Complete Build Under Windows
+Contains the contents of the "58kCPMv1.85_work" folder prepacked with Z80-SIM to
+allow you to experiment and rebuild the system under Windows. Descriptions of the
+content can be found there.
 
-These are the sources to the latest/last version of CP/M 2.2 I developed for this machine back in the day (1980s LOL) while at Kontron Electronics, Inc.
+The Z80-SIM CP/M 2.2 emulator is a minimal implementation of CP/M and does allow DO.COM
+to run properly, so building the system differs just slightly to how I would have built
+natively under ADS CP/M itself.
 
-## The 58kCPMv1.85_work folder
-This folder contains an image of the working directory taken from a backup of my 35mb hard drive. This contains both sources to the CP/M system and various utilities used to create the CP/M image. Also present are various utilities used for formatting disks, setting serial parameters and such under 2300 ADS CP/M.
+## Instructions
 
-## The winbuild folder
-This folder contains the various files described above, but pre-packed with the Z80-SIM CP/M emulator. You can download and unpack the .zip file under Windows and perform the build of the entire CP/M 2.2 system for the 2300 ADS.
+1. Extract the contents of the DSDD_WORK.zip file into a folder in Windows called DSDD_WORK.<br>
+Right-click DSDD_WORK.zip and "Extract All..." and a new folder DSDD_WORK will be created.<br>
+(SHA-1 of DSDD_WORK.zip is 36183d244df1d3cca08a4cafd9e93b9043dbd5f2)
 
-## Repair tips
-- Keyboard unit - The Mylar foil can degrade in these Keytronic capacitive keyboards. The result is you may notice some keys work and some do not. The repair is easy with replacement foam from texELEC (link below). I reported back to texELEC success repairing two keyboards with their replacement foam for this system.
+2. In the DSDD_WORK folder, run the "run.bat" file, you will see Z80-SIM boot up.<br>
+Drive A: contains the Z80-SIM CP/M system.<br>
+Drive B: contains a copy of my working directory for building the sources.<br>
+Drive C: contains WordStar that will run on Z80-SIM<br>
 
-- Static RAM - Seems these don't last forever either. Intel P2141-3 4k x 1 static RAMs on the 64k static RAM board may fail with time. If boot prompt appears, but you can't boot GenRad/FutureData RDOS, UDOS, or CP/M, you can use the built-in memory dump in the boot EPROM to try and localize the memory range. Knowing the range, the exact chip can be localized on the board.
+3. Build the sources, type:<br>
+<b>b:<br>
+submit asm b b</b><br>
 
-- 8" Floppy drive - black sponge foam was used in places for absorbing shock when opening and closing drive doors. If your floppy sticks when attempting to eject, see if your floppy drive has such foam and if it's become a sticky mess.
+4. Perform the link and creation of ACOPYSYS.COM:<br>
+<b>plink @cpm58k</b><br>
 
-- Micropolis disk drive controllers - I recall even back then they were somewhat fragile and prone to failure. I will need to debug one totally unresponsive 8" dual-drive unit when I have the chance. After all these years, fired it up and it simply does not work.
+Now that you've created the system generation utility, the question of course, is how do
+you actually generate an 8" CP/M boot floppy for your system?
 
-Should you have any questions, I can still offer limited assistance with this machine.
+## Some thoughts...
 
-## Related sites of interest
-http://bitsavers.trailing-edge.com/pdf/futuredata/ <br>
-https://texelec.com/product/foam-capacitive-pads-keytronic/ <br>
-http://bbslist.textfiles.com/213/oldschool.html (see entry for YARBBS) <br>
+It should be possible to extract a 64k memory image of my running system with ACOPYSYS still in
+memory of 0100H. The 2300 ADS boot EPROM could be modified to accept, say Intel HEX from SIO1
+write that to memory. Control could then be passed off to CP/M itself. In effect, populate
+memory with a snapshot of a running system.
 
-### Honorable mention (PolyMorphic Systems 8813 - the other computer)
-http://bitsavers.trailing-edge.com/pdf/polyMorphicSystems/ <br>
-https://deramp.com/polymorphic-computers/ <br>
+The ACOPSYS.MAP file describes where in memory each of the sections should be loaded. If you
+have the means, you could also create your own modified boot EPROM as suggested above, then extact
+the binary sections from ACOPYSYS.COM, get those into memory, then cold boot to CP/M. The
+BOOTPROM.MAC file shows a minimal bootloader (booting from floppy) that you can use as an
+an example boot EPROM. The trick is to also load ACOPYSYS.COM also into memory starting at
+0100H, then once you get to the CP/M command prompt, type:<br>
+<b>X 0 A</b><br>
+
+This will instruct ZCPR to run the current program already in memory (ACOPYSYS), then write the
+CP/M image contained in ACOPYSYS' memory to boot floppy on your in Drive A:. Finally, put the
+original boot EPROM back into the system.
+
+Power up the 2300 ADS unit and at the boot prompt, type \<C\>\<RETURN\> to boot CP/M.
