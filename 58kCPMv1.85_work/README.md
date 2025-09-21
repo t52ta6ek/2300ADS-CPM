@@ -5,7 +5,7 @@ for the GenRad 2300 Advanced Development System. FutureData was sold to GenRad,
 and this division was ultimately sold to Kontron in the early 80's where I worked for
 many years.
 
-This was the lastest version of CP/M I had developed for this machine. It was commercially
+This was the latest version of CP/M I had developed for this machine. It was commercially
 released by Kontron as an option in addition to RDOS and UDOS operating systems.
 
 These files were pulled off of DSDD 8" floppy disk backups I had made of my 35mb hard drive.
@@ -80,7 +80,7 @@ tool. See that folder for specific instruction to perform the build.
 - ACOPYSYS.MAP  - Plink linker-created MAP file
 
 ## Experimental boot EPROM
-This can be used to turn an NCP control unit into a headless CP/M system. A 2732 EPROM was used in this system. This bootloader was derived from the floppy driver. It simply attempts to boot CP/M from Drive 0 (A:). The boot disk would have been preconfigured using the ASETSIO and ASETIO utilities to use the TTY device (SIO1) as the console. A dumb-terminal connected to SIO1 is then used as the console.<br>
+This can be used to turn an NCP control unit into a headless CP/M system. A 2732 EPROM was used in this system. This bootloader was derived from the floppy driver. It simply attempts to boot CP/M from Drive 0 (A:). The boot disk would have been pre-configured using the ASETSIO and ASETIO utilities to use the TTY device (SIO1) as the console. A dumb-terminal connected to SIO1 is then used as the console.<br>
 - BOOTPROM.MAC  - Experimental boot EPROM for Network Control Processor.<br> 
 - BOOTPROM.LNK  - PLinkII linker command file for BOOTPROM.MAC<br>
 
