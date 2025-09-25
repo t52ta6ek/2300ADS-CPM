@@ -43,7 +43,7 @@ boot drive. At the bootprom's promt, type \<C\>\<RETURN\> to boot CP/M.
 
 The "winbuild" folder under the 2300ADS-CPM github contains the same files, but pre-packed
 with the Z80-SIM CP/M emulator which runs on Windows. Z80-SIM is just enough CP/M to
-allow you to rebuild the the system, and product the ACOPYSYS.COM system generation
+allow you to rebuild the the system, and produce the ACOPYSYS.COM system generation
 tool. See that folder for specific instruction to perform the build.
 
 ## 2300 ADS 58k CP/M 2.2 v1.85
