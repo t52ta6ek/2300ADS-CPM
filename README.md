@@ -21,10 +21,11 @@ This folder contains the various files described above, but pre-packed with the 
 Should you have any questions, I can still offer limited assistance with this machine.
 
 ## Related sites of interest
-http://bitsavers.trailing-edge.com/pdf/futuredata/ <br>
+https://bitsavers.org/pdf/futuredata/ <br>
 https://texelec.com/product/foam-capacitive-pads-keytronic/ <br>
+https://forum.vcfed.org/index.php?threads/decoding-genrad-rdos-ii-floppies.1253438/ <br>
 http://bbslist.textfiles.com/213/oldschool.html (see entry for YARBBS) <br>
 
 ### Honorable mention (PolyMorphic Systems 8813 - the other computer)
-http://bitsavers.trailing-edge.com/pdf/polyMorphicSystems/ <br>
+https://bitsavers.org/pdf/polyMorphicSystems/ <br>
 https://deramp.com/polymorphic-computers/ <br>
